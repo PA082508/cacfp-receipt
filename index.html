@@ -463,7 +463,8 @@ async function submitReceipt() {
       const ext = f.name.split('.').pop();
       const who = state.name.split(' ')[0].toUpperCase();
       const dt  = dateStr.replace(/-/g,'').slice(4);
-      const path = `${folder}/${fiscal}/${dt}_${who}_${i+1}.${ext}`;
+      const ts  = Date.now(); // уникальный timestamp -- исключает дубли
+      const path = `${folder}/${fiscal}/${dt}_${who}_${ts}_${i+1}.${ext}`;
 
       const up = await fetch(
         `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`,
