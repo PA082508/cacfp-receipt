@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CACFP — Admin Settings</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400&display=swap');
+  :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2a2d3a;--accent:#4f8ef7;--green:#38d9a9;--danger:#ff6b6b;--text:#e8eaf0;--muted:#6b7280;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:60px;}
+
+  /* ── Lock screen ── */
+  .lock-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;padding:24px;}
+  .lock-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px 28px;width:100%;max-width:360px;text-align:center;}
+  .lock-icon{font-size:44px;margin-bottom:16px;}
+  .lock-title{font-size:20px;font-weight:600;margin-bottom:6px;}
+  .lock-sub{font-size:13px;color:var(--muted);margin-bottom:24px;}
+  .pin-row{display:flex;gap:10px;justify-content:center;margin-bottom:20px;}
+  .pin-dot{width:14px;height:14px;border-radius:50%;background:var(--border);transition:background .2s;}
+  .pin-dot.filled{background:var(--accent);}
+  .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:240px;margin:0 auto;}
+  .num-btn{background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:20px;font-weight:500;padding:16px;cursor:pointer;transition:all .15s;}
+  .num-btn:hover{background:rgba(79,142,247,.15);border-color:var(--accent);}
+  .num-btn:active{transform:scale(.95);}
+  .num-btn.del{font-size:16px;color:var(--muted);}
+  .lock-error{color:var(--danger);font-size:13px;margin-top:14px;height:18px;}
+
+  /* ── Main UI ── */
+  .main{display:none;}
+  .header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:12px;}
+  .header-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--green));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .header-info{flex:1;}
+  .header-title{font-size:15px;font-weight:600;}
+  .header-sub{font-size:11px;color:var(--muted);}
+  .header-btns{display:flex;gap:8px;}
+  .save-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
+  .save-btn:hover{background:#3a7de8;}
+  .lock-btn{background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;}
+  .lock-btn:hover{color:var(--text);border-color:var(--text);}
+
+  .container{max-width:680px;margin:0 auto;padding:20px;}
+
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:16px;overflow:hidden;}
+  .section-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .section-title{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;}
+  .add-btn{background:rgba(79,142,247,.12);color:var(--accent);border:1px solid rgba(79,142,247,.3);border-radius:7px;padding:5px 12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;}
+  .add-btn:hover{background:rgba(79,142,247,.22);}
+
+  .item-row{padding:11px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+  .item-row:last-child{border-bottom:none;}
+
+  input[type=text],select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 10px;outline:none;transition:border-color .2s;}
+  input[type=text]:focus,select:focus{border-color:var(--accent);}
+  .w-third{width:calc(33% - 6px);}
+  .w-half{width:calc(50% - 4px);}
+  .w-full{width:100%;}
+  select.w-half{width:calc(50% - 4px);}
+
+  .del-btn{width:28px;height:28px;min-width:28px;background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.2);border-radius:7px;color:var(--danger);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;}
+  .del-btn:hover{background:rgba(255,107,107,.2);}
+  .drag-handle{color:var(--muted);font-size:14px;cursor:grab;padding:0 2px;min-width:16px;}
+
+  .hint{font-size:11px;color:var(--muted);padding:8px 18px 12px;line-height:1.5;}
+  .empty{padding:20px;text-align:center;color:var(--muted);font-size:13px;}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--green);color:#0f1117;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;transition:transform .3s;z-index:200;white-space:nowrap;}
+  .toast.show{transform:translateX(-50%) translateY(0);}
+  .toast.error{background:var(--danger);color:#fff;}
+
+  .director-center{font-size:11px;color:var(--accent);margin-top:2px;}
+</style>
+</head>
+<body>
+
+<!-- ── LOCK SCREEN ── -->
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-card">
+    <div class="lock-icon">🔒</div>
+    <div class="lock-title">Admin Settings</div>
+    <div class="lock-sub">Enter PIN to continue</div>
+
+    <div class="pin-row">
+      <div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div>
+      <div class="pin-dot" id="d4"></div>
+      <div class="pin-dot" id="d5"></div>
+    </div>
+
+    <div class="numpad">
+      <button class="num-btn" onclick="pinPress('1')">1</button>
+      <button class="num-btn" onclick="pinPress('2')">2</button>
+      <button class="num-btn" onclick="pinPress('3')">3</button>
+      <button class="num-btn" onclick="pinPress('4')">4</button>
+      <button class="num-btn" onclick="pinPress('5')">5</button>
+      <button class="num-btn" onclick="pinPress('6')">6</button>
+      <button class="num-btn" onclick="pinPress('7')">7</button>
+      <button class="num-btn" onclick="pinPress('8')">8</button>
+      <button class="num-btn" onclick="pinPress('9')">9</button>
+      <button class="num-btn" onclick="pinPress('0')" style="grid-column:2">0</button>
+      <button class="num-btn del" onclick="pinDel()">⌫</button>
+    </div>
+
+    <div class="lock-error" id="pinError"></div>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main" id="mainUI">
+  <div class="header">
+    <div class="header-icon">⚙️</div>
+    <div class="header-info">
+      <div class="header-title">Admin Settings</div>
+      <div class="header-sub">CACFP Receipt App</div>
+    </div>
+    <div class="header-btns">
+      <button class="lock-btn" onclick="lockApp()">🔒 Lock</button>
+      <button class="save-btn" onclick="saveAll()">💾 Save All</button>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- CENTERS -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">🏫 Centers</div>
+        <button class="add-btn" onclick="addCenter()">+ Add Center</button>
+      </div>
+      <div id="centers-list"></div>
+      <div class="hint">Center ID is used internally (lowercase, no spaces). Name and city are shown to users.</div>
+    </div>
+
+    <!-- STAFF -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">👥 Staff</div>
+        <button class="add-btn" onclick="addStaff()">+ Add Person</button>
+      </div>
+      <div id="staff-list"></div>
+      <div class="hint">Directors are linked to a specific center. Purchasing staff are linked to the office.</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL  = 'https://rkabxzqcikojcphwrkty.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrYWJ4enFjaWtvamNwaHdya3R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NjIwNjMsImV4cCI6MjA5NTIzODA2M30.AtizV_nwkpB4bzZKLp6oE8wnd3RmrhUNjJWBnp7HGVw';
+const PIN = '44092';
+
+let pin = '';
+let settings = { centers:[], staff:[] };
+
+// ── PIN ──────────────────────────────────────────────────────
+function pinPress(d) {
+  if (pin.length >= 5) return;
+  pin += d;
+  updateDots();
+  if (pin.length === 5) checkPin();
+}
+
+function pinDel() {
+  pin = pin.slice(0,-1);
+  updateDots();
+  document.getElementById('pinError').textContent = '';
+}
+
+function updateDots() {
+  for (let i=1; i<=5; i++) {
+    document.getElementById('d'+i).className = 'pin-dot' + (i<=pin.length?' filled':'');
+  }
+}
+
+function checkPin() {
+  if (pin === PIN) {
+    document.getElementById('lockScreen').style.display = 'none';
+    document.getElementById('mainUI').style.display = 'block';
+    loadSettings();
+  } else {
+    document.getElementById('pinError').textContent = 'Incorrect PIN. Try again.';
+    setTimeout(() => {
+      pin = '';
+      updateDots();
+      document.getElementById('pinError').textContent = '';
+    }, 1000);
+  }
+}
+
+function lockApp() {
+  pin = '';
+  updateDots();
+  document.getElementById('mainUI').style.display = 'none';
+  document.getElementById('lockScreen').style.display = 'flex';
+}
+
+// ── LOAD ─────────────────────────────────────────────────────
+async function loadSettings() {
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/app_settings?select=id,value&id=in.(centers,staff)`,
+      {headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON}}
+    );
+    const rows = await r.json();
+    rows.forEach(row => { settings[row.id] = row.value; });
+  } catch(e) {
+    showToast('Failed to load settings', true);
+  }
+  renderAll();
+}
+
+function renderAll() { renderCenters(); renderStaff(); }
+
+// ── CENTERS ──────────────────────────────────────────────────
+function renderCenters() {
+  const el = document.getElementById('centers-list');
+  if (!settings.centers.length) {
+    el.innerHTML = '<div class="empty">No centers yet. Click + Add Center.</div>';
+    return;
+  }
+  el.innerHTML = settings.centers.map((c,i) => `
+    <div class="item-row">
+      <span class="drag-handle">⠿</span>
+      <input type="text" class="w-third" placeholder="ID (e.g. ridge)"
+        value="${c.id||''}" onchange="settings.centers[${i}].id=this.value.toLowerCase().trim()">
+      <input type="text" class="w-third" placeholder="Name (e.g. Ridge)"
+        value="${c.name||''}" onchange="settings.centers[${i}].name=this.value">
+      <input type="text" class="w-third" placeholder="City"
+        value="${c.city||''}" onchange="settings.centers[${i}].city=this.value">
+      <button class="del-btn" onclick="delCenter(${i})">×</button>
+    </div>
+  `).join('');
+}
+
+function addCenter() {
+  settings.centers.push({id:'',name:'',city:''});
+  renderCenters();
+  // Фокус на последнюю строку
+  const inputs = document.querySelectorAll('#centers-list .item-row:last-child input');
+  if (inputs[0]) inputs[0].focus();
+}
+
+function delCenter(i) {
+  if (!confirm('Delete this center?')) return;
+  settings.centers.splice(i,1);
+  renderCenters();
+  renderStaff(); // обновляем выпадающие списки центров
+}
+
+// ── STAFF ────────────────────────────────────────────────────
+function renderStaff() {
+  const el = document.getElementById('staff-list');
+  if (!settings.staff.length) {
+    el.innerHTML = '<div class="empty">No staff yet. Click + Add Person.</div>';
+    return;
+  }
+  el.innerHTML = settings.staff.map((s,i) => `
+    <div class="item-row">
+      <span class="drag-handle">⠿</span>
+      <input type="text" class="w-half" placeholder="Full name"
+        value="${s.name||''}" onchange="settings.staff[${i}].name=this.value">
+      <select class="w-half" onchange="settings.staff[${i}].role=this.value;renderStaff()">
+        <option value="director"   ${s.role==='director'  ?'selected':''}>Director</option>
+        <option value="purchasing" ${s.role==='purchasing'?'selected':''}>Purchasing Staff</option>
+      </select>
+      ${s.role==='director' ? `
+      <select class="w-full" style="margin-top:4px"
+        onchange="settings.staff[${i}].center=this.value">
+        <option value="">-- Select center --</option>
+        ${settings.centers.map(c=>`
+          <option value="${c.id}" ${s.center===c.id?'selected':''}>${c.name} — ${c.city}</option>
+        `).join('')}
+      </select>` : `
+      <div style="width:100%;margin-top:4px;font-size:11px;color:var(--accent);padding:0 2px">
+        Office — all centers
+      </div>`}
+      <button class="del-btn" onclick="delStaff(${i})">×</button>
+    </div>
+  `).join('');
+}
+
+function addStaff() {
+  settings.staff.push({
+    name:'',
+    role:'director',
+    center: settings.centers[0]?.id||''
+  });
+  renderStaff();
+}
+
+function delStaff(i) {
+  settings.staff.splice(i,1);
+  renderStaff();
+}
+
+// ── SAVE ─────────────────────────────────────────────────────
+async function saveAll() {
+  let ok = true;
+  for (const key of ['centers','staff']) {
+    try {
+      const r = await fetch(
+        `${SUPABASE_URL}/rest/v1/app_settings?id=eq.${key}`,
+        { method:'PATCH',
+          headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON,
+                   'Content-Type':'application/json','Prefer':'return=minimal'},
+          body:JSON.stringify({value:settings[key],updated_at:new Date().toISOString()})
+        }
+      );
+      if (!r.ok) throw new Error(await r.text());
+    } catch(e) {
+      showToast('Error saving '+key+': '+e.message, true);
+      ok = false; break;
+    }
+  }
+  if (ok) showToast('Settings saved successfully');
+}
+
+// ── TOAST ────────────────────────────────────────────────────
+function showToast(msg, isError=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast'+(isError?' error':'');
+  setTimeout(()=>t.classList.add('show'),10);
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>
