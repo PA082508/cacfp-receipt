@@ -16,24 +16,24 @@
   :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2a2d3a;--accent:#4f8ef7;--green:#38d9a9;--danger:#ff6b6b;--text:#e8eaf0;--muted:#6b7280;}
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);padding-bottom:40px;}
-
+ 
   .header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:12px;}
   .header-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--green));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
   .header-title{font-size:16px;font-weight:600;}
   .header-sub{font-size:12px;color:var(--muted);}
-
+ 
   /* Steps */
   .steps{display:flex;padding:14px 20px 0;gap:6px;}
   .step{flex:1;height:3px;background:var(--border);border-radius:2px;transition:background .3s;}
   .step.active{background:var(--accent);}
   .step.done{background:var(--green);}
-
+ 
   .page{display:none;padding:20px;}
   .page.active{display:block;}
-
+ 
   .page-title{font-size:22px;font-weight:600;margin-bottom:6px;}
   .page-sub{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.5;}
-
+ 
   /* Role chips */
   .role-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
   .role-card{background:var(--surface2);border:2px solid var(--border);border-radius:14px;padding:20px 14px;cursor:pointer;transition:all .15s;text-align:center;}
@@ -41,14 +41,14 @@
   .role-card.selected{border-color:var(--accent);background:rgba(79,142,247,.1);}
   .role-card .role-icon{font-size:32px;margin-bottom:8px;}
   .role-card .role-name{font-size:14px;font-weight:600;}
-
+ 
   .field{margin-bottom:16px;}
   .label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
-
+ 
   select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;padding:13px 14px;outline:none;transition:border-color .2s;appearance:none;}
   select:focus{border-color:var(--accent);}
   select option{background:#1a1d27;}
-
+ 
   /* Type cards */
   .type-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:8px;}
   .type-card{background:var(--surface2);border:2px solid var(--border);border-radius:16px;padding:24px 14px;cursor:pointer;transition:all .15s;text-align:center;}
@@ -58,7 +58,7 @@
   .type-card .type-icon{font-size:40px;margin-bottom:10px;}
   .type-card .type-name{font-size:15px;font-weight:600;}
   .type-card .type-sub{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4;}
-
+ 
   /* Upload */
   .upload-zone{border:2px dashed var(--border);border-radius:16px;padding:36px 20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;margin-bottom:16px;}
   .upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(79,142,247,.04);}
@@ -66,13 +66,13 @@
   .upload-icon{font-size:48px;margin-bottom:12px;}
   .upload-label{font-size:16px;font-weight:600;margin-bottom:6px;}
   .upload-hint{font-size:13px;color:var(--muted);}
-
+ 
   .thumbs{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
   .thumb-wrap{position:relative;display:inline-block;}
   .thumb{width:80px;height:80px;border-radius:10px;object-fit:cover;border:2px solid var(--border);}
   .thumb-pdf{width:80px;height:80px;border-radius:10px;background:var(--surface2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:28px;}
   .thumb-del{position:absolute;top:-7px;right:-7px;width:22px;height:22px;background:var(--danger);border-radius:50%;border:none;cursor:pointer;color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center;}
-
+ 
   /* Summary card */
   .summary{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:20px;}
   .summary-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:14px;}
@@ -84,7 +84,7 @@
   .badge-supplies{background:rgba(79,142,247,.15);color:var(--accent);}
   .badge-director{background:rgba(79,142,247,.15);color:var(--accent);}
   .badge-purchasing{background:rgba(56,217,169,.12);color:var(--green);}
-
+ 
   /* Buttons */
   .btn{width:100%;padding:15px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;cursor:pointer;border:none;transition:all .15s;}
   .btn-primary{background:var(--accent);color:#fff;}
@@ -94,27 +94,27 @@
   .btn-ghost:hover{border-color:var(--text);color:var(--text);}
   .btn-row{display:flex;gap:10px;margin-top:20px;}
   .btn-row .btn{flex:1;}
-
+ 
   /* Progress */
   .progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin:14px 0;}
   .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:2px;width:0%;transition:width .3s;}
-
+ 
   .error-box{background:rgba(255,107,107,.1);border:1px solid var(--danger);border-radius:10px;padding:12px;font-size:13px;color:var(--danger);margin-bottom:14px;display:none;}
   .error-box.visible{display:block;}
-
+ 
   /* Success */
   .success-wrap{text-align:center;padding:40px 20px;}
   .success-icon{width:84px;height:84px;background:rgba(56,217,169,.12);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 20px;}
   .success-title{font-size:24px;font-weight:600;margin-bottom:10px;}
   .success-sub{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:32px;}
-
+ 
   /* Notice */
   .notice{background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--muted);line-height:1.6;margin-top:12px;}
   .notice b{color:var(--text);}
 </style>
 </head>
 <body>
-
+ 
 <div class="header">
   <div class="header-icon">🧾</div>
   <div>
@@ -122,18 +122,18 @@
     <div class="header-sub">CACFP Food Program</div>
   </div>
 </div>
-
+ 
 <div class="steps">
   <div class="step active" id="s1"></div>
   <div class="step" id="s2"></div>
   <div class="step" id="s3"></div>
 </div>
-
+ 
 <!-- ══ PAGE 1: WHO ARE YOU ══ -->
 <div class="page active" id="page1">
   <div class="page-title">Who are you?</div>
   <div class="page-sub">Select your role and name.</div>
-
+ 
   <div class="role-grid">
     <div class="role-card" id="role-director" onclick="selectRole('director')">
       <div class="role-icon">🏫</div>
@@ -144,27 +144,27 @@
       <div class="role-name">Purchasing Staff</div>
     </div>
   </div>
-
+ 
   <div class="field" id="center-field" style="display:none">
     <label class="label">Center</label>
     <select id="center-select"></select>
   </div>
-
+ 
   <div class="field" id="name-field" style="display:none">
     <label class="label">Your Name</label>
     <select id="name-select"></select>
   </div>
-
+ 
   <div class="btn-row">
     <button class="btn btn-primary" onclick="goTo(2)">Next →</button>
   </div>
 </div>
-
+ 
 <!-- ══ PAGE 2: PURCHASE TYPE ══ -->
 <div class="page" id="page2">
   <div class="page-title">Type of Purchase</div>
   <div class="page-sub">Use a <b>separate receipt</b> for each type.</div>
-
+ 
   <div class="type-grid">
     <div class="type-card food" id="type-food" onclick="selectType('food')">
       <div class="type-icon">🍎</div>
@@ -177,22 +177,22 @@
       <div class="type-sub">School & office supplies</div>
     </div>
   </div>
-
+ 
   <div class="notice">
     <b>Important:</b> Food and non-food items must be on separate receipts for CACFP compliance.
   </div>
-
+ 
   <div class="btn-row">
     <button class="btn btn-ghost" onclick="goTo(1)">← Back</button>
     <button class="btn btn-primary" onclick="goTo(3)">Next →</button>
   </div>
 </div>
-
+ 
 <!-- ══ PAGE 3: PHOTO ══ -->
 <div class="page" id="page3">
   <div class="page-title">Photograph Receipt</div>
   <div class="page-sub">Take a clear photo of the entire receipt. Add multiple photos if it's long.</div>
-
+ 
   <div class="upload-zone" id="dropZone"
     ondragover="event.preventDefault();this.classList.add('drag')"
     ondragleave="this.classList.remove('drag')"
@@ -203,10 +203,10 @@
     <div class="upload-label">Tap to take photo</div>
     <div class="upload-hint">JPG, PNG, PDF · Multiple photos OK</div>
   </div>
-
+ 
   <div class="thumbs" id="thumbs"></div>
   <div class="error-box" id="photoError"></div>
-
+ 
   <!-- Summary before submit -->
   <div class="summary" id="summary" style="display:none">
     <div class="summary-row">
@@ -234,12 +234,12 @@
       <span class="summary-val" id="sum-photos"></span>
     </div>
   </div>
-
+ 
   <div class="error-box" id="submitError"></div>
   <div class="progress-bar" id="progressBar" style="display:none">
     <div class="progress-fill" id="progressFill"></div>
   </div>
-
+ 
   <div class="btn-row">
     <button class="btn btn-ghost" onclick="goTo(2)">← Back</button>
     <button class="btn btn-primary" id="submitBtn" onclick="submitReceipt()" disabled>
@@ -247,28 +247,33 @@
     </button>
   </div>
 </div>
-
+ 
 <!-- ══ SUCCESS ══ -->
 <div class="page" id="page4">
   <div class="success-wrap">
     <div class="success-icon">✓</div>
     <div class="success-title">Submitted!</div>
     <div class="success-sub" id="successMsg"></div>
-    <button class="btn btn-primary" onclick="resetForm()">
-      + Submit Another Receipt
-    </button>
+    <div style="display:flex;gap:12px;padding:0 0px">
+      <button class="btn btn-ghost" onclick="window.close()" style="flex:1">
+        ✕ Done
+      </button>
+      <button class="btn btn-primary" onclick="resetForm()" style="flex:2">
+        + Submit Another
+      </button>
+    </div>
   </div>
 </div>
-
+ 
 <script>
 const SUPABASE_URL  = 'https://rkabxzqcikojcphwrkty.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrYWJ4enFjaWtvamNwaHdya3R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NjIwNjMsImV4cCI6MjA5NTIzODA2M30.AtizV_nwkpB4bzZKLp6oE8wnd3RmrhUNjJWBnp7HGVw';
 const BUCKET = 'receipts';
-
+ 
 let cfg = { centers:[], staff:[], purchase_types:[] };
 let state = { role:'', name:'', center:'', type:'', files:[] };
 let currentPage = 1;
-
+ 
 async function init() {
   try {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/app_settings?select=id,value`,
@@ -277,7 +282,7 @@ async function init() {
     rows.forEach(row => { cfg[row.id] = row.value; });
   } catch(e) { console.warn('Settings:', e.message); }
 }
-
+ 
 // ── NAVIGATION ───────────────────────────────────────────────
 function goTo(n) {
   if (n > currentPage && !validate(currentPage)) return;
@@ -291,7 +296,7 @@ function goTo(n) {
   if (n===3) buildSummary();
   window.scrollTo(0,0);
 }
-
+ 
 function validate(n) {
   if (n===1) {
     if (!state.role) { alert('Please select your role.'); return false; }
@@ -303,7 +308,7 @@ function validate(n) {
   }
   return true;
 }
-
+ 
 // ── ROLE SELECTION ───────────────────────────────────────────
 function selectRole(role) {
   state.role = role;
@@ -311,12 +316,12 @@ function selectRole(role) {
   state.center = '';
   document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
   document.getElementById('role-'+role).classList.add('selected');
-
+ 
   const centerField = document.getElementById('center-field');
   const nameField   = document.getElementById('name-field');
   const nameSelect  = document.getElementById('name-select');
   const centerSelect = document.getElementById('center-select');
-
+ 
   if (role === 'director') {
     const centers = cfg.centers.length ? cfg.centers :
       [{id:'ridge',name:'Ridge',city:'Wickliffe'},
@@ -342,7 +347,7 @@ function selectRole(role) {
     nameField.style.display = 'block';
   }
 }
-
+ 
 function buildDirectorNames(centerId) {
   const nameField  = document.getElementById('name-field');
   const nameSelect = document.getElementById('name-select');
@@ -358,14 +363,14 @@ function buildDirectorNames(centerId) {
   nameSelect.onchange = function() { state.name = this.value; };
   nameField.style.display = 'block';
 }
-
+ 
 // ── TYPE SELECTION ───────────────────────────────────────────
 function selectType(type) {
   state.type = type;
   document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
   document.getElementById('type-'+type).classList.add('selected');
 }
-
+ 
 // ── FILES ────────────────────────────────────────────────────
 function handleFiles(files) {
   for (const f of files) state.files.push(f);
@@ -404,17 +409,17 @@ function renderThumbs() {
   // Показываем summary как только есть хотя бы одно фото
   document.getElementById('summary').style.display = state.files.length ? 'block' : 'none';
 }
-
+ 
 function updateSubmitBtn() {
   document.getElementById('submitBtn').disabled = state.files.length === 0;
 }
-
+ 
 // ── SUMMARY ──────────────────────────────────────────────────
 function buildSummary() {
   const today = new Date();
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const dateStr = months[today.getMonth()]+' '+today.getDate()+', '+today.getFullYear();
-
+ 
   document.getElementById('sum-name').textContent = state.name;
   document.getElementById('sum-role').innerHTML =
     `<span class="badge badge-${state.role}">${state.role}</span>`;
@@ -423,7 +428,7 @@ function buildSummary() {
   document.getElementById('sum-date').textContent = dateStr;
   document.getElementById('sum-photos').textContent =
     state.files.length + ' file'+(state.files.length!==1?'s':'');
-
+ 
   const centerRow = document.getElementById('sum-center-row');
   if (state.role==='director') {
     const centers = cfg.centers.length ? cfg.centers :
@@ -435,20 +440,20 @@ function buildSummary() {
     centerRow.style.display = 'none';
   }
 }
-
+ 
 // ── SUBMIT ───────────────────────────────────────────────────
 async function submitReceipt() {
   const btn  = document.getElementById('submitBtn');
   const err  = document.getElementById('submitError');
   const bar  = document.getElementById('progressBar');
   const fill = document.getElementById('progressFill');
-
+ 
   err.classList.remove('visible');
   btn.disabled = true;
   btn.textContent = 'Uploading...';
   bar.style.display = 'block';
   fill.style.width = '10%';
-
+ 
   const today = new Date();
   const fiscal = today.toISOString().slice(0,7);
   const dateStr = today.toISOString().slice(0,10);
@@ -456,7 +461,7 @@ async function submitReceipt() {
     ? `directors/${state.center}/${state.type}`
     : `purchasing/${state.type}`;
   const filePaths = [];
-
+ 
   try {
     for (let i=0; i<state.files.length; i++) {
       const f   = state.files[i];
@@ -465,7 +470,7 @@ async function submitReceipt() {
       const dt  = dateStr.replace(/-/g,'').slice(4);
       const ts  = Date.now(); // уникальный timestamp -- исключает дубли
       const path = `${folder}/${fiscal}/${dt}_${who}_${ts}_${i+1}.${ext}`;
-
+ 
       const up = await fetch(
         `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`,
         { method:'POST',
@@ -477,9 +482,9 @@ async function submitReceipt() {
       filePaths.push(path);
       fill.style.width = (10+75*(i+1)/state.files.length)+'%';
     }
-
+ 
     fill.style.width = '90%';
-
+ 
     const rec = {
       center:       state.role==='director' ? state.center : 'office',
       fiscal_month: fiscal,
@@ -494,7 +499,7 @@ async function submitReceipt() {
       purchase_type:state.type,
       status:       'pending'
     };
-
+ 
     const db = await fetch(`${SUPABASE_URL}/rest/v1/receipts`, {
       method:'POST',
       headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON,
@@ -502,13 +507,13 @@ async function submitReceipt() {
       body:JSON.stringify(rec)
     });
     if (!db.ok) throw new Error('DB error: '+await db.text());
-
+ 
     fill.style.width = '100%';
     setTimeout(() => {
       bar.style.display = 'none';
       showSuccess();
     }, 400);
-
+ 
   } catch(e) {
     bar.style.display = 'none';
     err.textContent = e.message;
@@ -517,7 +522,7 @@ async function submitReceipt() {
     btn.textContent = '✓ Submit';
   }
 }
-
+ 
 function showSuccess() {
   for (let i=1;i<=3;i++) document.getElementById('s'+i).className='step done';
   document.getElementById('page3').classList.remove('active');
@@ -526,7 +531,7 @@ function showSuccess() {
   document.getElementById('successMsg').textContent =
     `${type} receipt submitted by ${state.name}.\n${state.files.length} photo${state.files.length!==1?'s':''} saved securely.\nPending processing.`;
 }
-
+ 
 function resetForm() {
   state = {role:'',name:'',center:'',type:'',files:[]};
   document.querySelectorAll('.role-card,.type-card').forEach(c=>c.classList.remove('selected'));
@@ -538,7 +543,7 @@ function resetForm() {
   currentPage=0;
   goTo(1);
 }
-
+ 
 init();
 </script>
 <script>
@@ -554,3 +559,4 @@ resizeIframe();
 </script>
 </body>
 </html>
+ 
