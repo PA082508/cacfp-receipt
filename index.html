@@ -16,49 +16,41 @@
   :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2a2d3a;--accent:#4f8ef7;--green:#38d9a9;--danger:#ff6b6b;--text:#e8eaf0;--muted:#6b7280;}
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px;}
-
   .header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:12px;}
   .header-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--green));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
   .header-title{font-size:16px;font-weight:600;}
   .header-sub{font-size:12px;color:var(--muted);}
-
   .steps{display:flex;padding:14px 20px 0;gap:6px;}
   .step{flex:1;height:3px;background:var(--border);border-radius:2px;transition:background .3s;}
   .step.active{background:var(--accent);}
   .step.done{background:var(--green);}
-
   .page{display:none;padding:20px;}
   .page.active{display:block;}
   .page-title{font-size:22px;font-weight:600;margin-bottom:6px;}
   .page-sub{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.5;}
-
   .role-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
   .role-card{background:var(--surface2);border:2px solid var(--border);border-radius:14px;padding:20px 14px;cursor:pointer;transition:all .15s;text-align:center;}
   .role-card:hover{border-color:var(--accent);}
   .role-card.selected{border-color:var(--accent);background:rgba(79,142,247,.1);}
   .role-card .role-icon{font-size:32px;margin-bottom:8px;}
   .role-card .role-name{font-size:14px;font-weight:600;}
-
   .field{margin-bottom:16px;}
   .label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
-
-  select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;padding:13px 14px;outline:none;transition:border-color .2s;appearance:none;}
-  select:focus{border-color:var(--accent);}
+  select,input[type=text]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;padding:13px 14px;outline:none;transition:border-color .2s;appearance:none;}
+  select:focus,input[type=text]:focus{border-color:var(--accent);}
   select option{background:#1a1d27;}
-
+  input[type=text]::placeholder{color:var(--muted);}
   .upload-zone{border:2px dashed var(--border);border-radius:16px;padding:36px 20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;margin-bottom:16px;}
   .upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(79,142,247,.04);}
   .upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:100px;}
   .upload-icon{font-size:48px;margin-bottom:12px;}
   .upload-label{font-size:16px;font-weight:600;margin-bottom:6px;}
   .upload-hint{font-size:13px;color:var(--muted);}
-
   .thumbs{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
   .thumb-wrap{position:relative;display:inline-block;}
   .thumb{width:80px;height:80px;border-radius:10px;object-fit:cover;border:2px solid var(--border);}
   .thumb-pdf{width:80px;height:80px;border-radius:10px;background:var(--surface2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:28px;}
   .thumb-del{position:absolute;top:-7px;right:-7px;width:22px;height:22px;background:var(--danger);border-radius:50%;border:none;cursor:pointer;color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center;}
-
   .pay-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;}
   .pay-card{background:var(--surface2);border:2px solid var(--border);border-radius:12px;padding:12px 8px;cursor:pointer;transition:all .15s;text-align:center;}
   .pay-card:hover{border-color:var(--accent);}
@@ -69,9 +61,18 @@
   .pay-name{font-size:12px;font-weight:600;}
   .pay-sub{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.3;}
 
+  /* ── extra fields per payment type ── */
+  .pay-extra{margin-top:0;margin-bottom:16px;display:none;}
+  .pay-extra.visible{display:block;}
+  .pay-extra-inner{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;}
+  .pay-extra-inner .label{margin-top:0;}
+
+  /* cash badge inside extra */
+  .cash-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(247,201,79,.12);border:1px solid rgba(247,201,79,.3);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:#f7c94f;margin-bottom:12px;}
+  .personal-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.25);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--danger);margin-bottom:12px;}
+
   .notice{background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:16px;}
   .notice b{color:var(--text);}
-
   .summary{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:20px;}
   .summary-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:14px;}
   .summary-row:last-child{border-bottom:none;}
@@ -80,7 +81,9 @@
   .badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:600;text-transform:uppercase;}
   .badge-director{background:rgba(79,142,247,.15);color:var(--accent);}
   .badge-purchasing{background:rgba(56,217,169,.12);color:var(--green);}
-
+  .badge-corporate{background:rgba(79,142,247,.15);color:var(--accent);}
+  .badge-cash{background:rgba(247,201,79,.15);color:#f7c94f;}
+  .badge-personal{background:rgba(255,107,107,.12);color:var(--danger);}
   .btn{width:100%;padding:15px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;cursor:pointer;border:none;transition:all .15s;}
   .btn-primary{background:var(--accent);color:#fff;}
   .btn-primary:hover{background:#3a7de8;}
@@ -89,12 +92,10 @@
   .btn-ghost:hover{border-color:var(--text);color:var(--text);}
   .btn-row{display:flex;gap:10px;margin-top:20px;}
   .btn-row .btn{flex:1;}
-
   .progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin:14px 0;}
   .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:2px;width:0%;transition:width .3s;}
   .error-box{background:rgba(255,107,107,.1);border:1px solid var(--danger);border-radius:10px;padding:12px;font-size:13px;color:var(--danger);margin-bottom:14px;display:none;}
   .error-box.visible{display:block;}
-
   .success-wrap{text-align:center;padding:40px 20px;}
   .success-icon{width:84px;height:84px;background:rgba(56,217,169,.12);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 20px;}
   .success-title{font-size:24px;font-weight:600;margin-bottom:10px;}
@@ -102,7 +103,6 @@
 </style>
 </head>
 <body>
-
 <div class="header">
   <div class="header-icon">🧾</div>
   <div>
@@ -110,7 +110,6 @@
     <div class="header-sub">CACFP Food Program</div>
   </div>
 </div>
-
 <div class="steps">
   <div class="step active" id="s1"></div>
   <div class="step" id="s2"></div>
@@ -120,7 +119,6 @@
 <div class="page active" id="page1">
   <div class="page-title">Who are you?</div>
   <div class="page-sub">Select your role and name.</div>
-
   <div class="role-grid">
     <div class="role-card" id="role-director" onclick="selectRole('director')">
       <div class="role-icon">🏫</div>
@@ -131,23 +129,20 @@
       <div class="role-name">Purchasing Staff</div>
     </div>
   </div>
-
   <div class="field" id="center-field" style="display:none">
     <label class="label">Center</label>
     <select id="center-select"></select>
   </div>
-
   <div class="field" id="name-field" style="display:none">
     <label class="label">Your Name</label>
     <select id="name-select"></select>
   </div>
-
   <div class="btn-row">
     <button class="btn btn-primary" onclick="goTo(2)">Next →</button>
   </div>
 </div>
 
-<!-- PAGE 2: PHOTO -->
+<!-- PAGE 2: PHOTO + PAYMENT -->
 <div class="page" id="page2">
   <div class="page-title">Photograph Document</div>
   <div class="page-sub">Receipt, invoice, or any payment document. Multiple photos OK for long receipts.</div>
@@ -171,7 +166,45 @@
         <div class="pay-sub">Reimbursement needed</div>
       </div>
     </div>
-  </div>
+
+    <!-- CASH extra fields -->
+    <div class="pay-extra" id="extra-cash">
+      <div class="pay-extra-inner">
+        <div class="cash-badge">💵 Cash — manual approval required</div>
+        <div class="field" style="margin-bottom:12px">
+          <label class="label">Amount Paid (cash)</label>
+          <input type="text" id="cash-amount" placeholder="e.g. 47.85"
+            inputmode="decimal" oninput="state.cashAmount=this.value;updateSummaryPayment()">
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label class="label">Approved by (Director)</label>
+          <select id="cash-approved-by" onchange="state.cashApprovedBy=this.value;updateSummaryPayment()">
+            <option value="">-- Select approving director --</option>
+            <option value="Sonia Texidor">Sonia Texidor — Ridge</option>
+            <option value="Theresa Rolf">Theresa Rolf — Alpha</option>
+            <option value="Carmen Santiago">Carmen Santiago — Pearl</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERSONAL extra fields -->
+    <div class="pay-extra" id="extra-personal">
+      <div class="pay-extra-inner">
+        <div class="personal-badge">👤 Personal Card — reimbursement will be processed</div>
+        <div class="field" style="margin-bottom:12px">
+          <label class="label">Reimbursement to</label>
+          <input type="text" id="personal-reimburse-to" placeholder="Name on card / account"
+            oninput="state.reimburseTo=this.value;updateSummaryPayment()">
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label class="label">Amount to Reimburse</label>
+          <input type="text" id="personal-amount" placeholder="e.g. 123.50"
+            inputmode="decimal" oninput="state.reimburseAmount=this.value;updateSummaryPayment()">
+        </div>
+      </div>
+    </div>
+  </div><!-- /field -->
 
   <div class="notice">
     <b>AI will automatically identify:</b> vendor, amounts, food vs supplies vs other items, milk gallons, and payment card.
@@ -187,7 +220,6 @@
     <div class="upload-label">Tap to take photo</div>
     <div class="upload-hint">Receipt · Invoice · Card slip · JPG, PNG, PDF</div>
   </div>
-
   <div class="thumbs" id="thumbs"></div>
 
   <div class="summary" id="summary" style="display:none">
@@ -203,9 +235,13 @@
       <span class="summary-key">Center</span>
       <span class="summary-val" id="sum-center"></span>
     </div>
-    <div class="summary-row">
+    <div class="summary-row" id="sum-payment-row" style="display:none">
       <span class="summary-key">Payment</span>
       <span class="summary-val" id="sum-payment"></span>
+    </div>
+    <div class="summary-row" id="sum-extra-row" style="display:none">
+      <span class="summary-key" id="sum-extra-key"></span>
+      <span class="summary-val" id="sum-extra-val"></span>
     </div>
     <div class="summary-row">
       <span class="summary-key">Date</span>
@@ -221,7 +257,6 @@
   <div class="progress-bar" id="progressBar" style="display:none">
     <div class="progress-fill" id="progressFill"></div>
   </div>
-
   <div class="btn-row">
     <button class="btn btn-ghost" onclick="goTo(1)">← Back</button>
     <button class="btn btn-primary" id="submitBtn" onclick="submitReceipt()" disabled>✓ Submit</button>
@@ -247,7 +282,11 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 const BUCKET = 'receipts';
 
 let cfg = { centers:[], staff:[] };
-let state = { role:'', name:'', center:'', payment:'', files:[] };
+let state = {
+  role:'', name:'', center:'', payment:'', files:[],
+  cashAmount:'', cashApprovedBy:'',
+  reimburseTo:'', reimburseAmount:''
+};
 let currentPage = 1;
 
 async function init() {
@@ -283,19 +322,17 @@ function validate(n) {
 
 function selectRole(role) {
   state.role = role; state.name = ''; state.center = '';
-  document.querySelectorAll('.role-card,.pay-card').forEach(c=>c.classList.remove('selected','corporate','cash','personal'));
+  document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('selected'));
   document.getElementById('role-'+role).classList.add('selected');
-
   const centerField  = document.getElementById('center-field');
   const nameField    = document.getElementById('name-field');
   const nameSelect   = document.getElementById('name-select');
   const centerSelect = document.getElementById('center-select');
-
   if (role === 'director') {
     const centers = cfg.centers.length ? cfg.centers :
       [{id:'ridge',name:'Ridge',city:'Wickliffe'},
        {id:'alpha',name:'Alpha',city:'Highland Heights'},
-       {id:'pearl',name:'Pearl',city:'Parma Heights'}];
+       {id:'pearl',name:'Pearl',city:'Mentor'}];
     centerSelect.innerHTML = '<option value="">-- Select center --</option>' +
       centers.map(c=>`<option value="${c.id}">${c.name} — ${c.city}</option>`).join('');
     centerSelect.onchange = function() { state.center=this.value; buildDirectorNames(this.value); };
@@ -328,9 +365,64 @@ function buildDirectorNames(centerId) {
 
 function selectPayment(type) {
   state.payment = type;
-  document.querySelectorAll('.pay-card').forEach(c => c.classList.remove('selected'));
+  // reset extra fields
+  state.cashAmount=''; state.cashApprovedBy='';
+  state.reimburseTo=''; state.reimburseAmount='';
+
+  document.querySelectorAll('.pay-card').forEach(c => {
+    c.classList.remove('selected','corporate','cash','personal');
+  });
   const el = document.getElementById('pay-'+type);
   if (el) { el.classList.add('selected'); el.classList.add(type); }
+
+  // show/hide extra panels
+  document.getElementById('extra-cash').classList.toggle('visible', type==='cash');
+  document.getElementById('extra-personal').classList.toggle('visible', type==='personal');
+
+  // pre-fill "Reimbursement to" with submitter's name
+  if (type==='personal' && state.name) {
+    document.getElementById('personal-reimburse-to').value = state.name;
+    state.reimburseTo = state.name;
+  } else {
+    document.getElementById('personal-reimburse-to').value = '';
+  }
+  // reset cash fields UI
+  document.getElementById('cash-amount').value = '';
+  document.getElementById('cash-approved-by').value = '';
+  document.getElementById('personal-amount').value = '';
+
+  updateSummaryPayment();
+  checkSubmitReady();
+}
+
+function updateSummaryPayment() {
+  if (!state.payment) return;
+  const labels = {corporate:'💳 Corporate Card', cash:'💵 Cash', personal:'👤 Personal Card'};
+  document.getElementById('sum-payment').innerHTML =
+    `<span class="badge badge-${state.payment}">${labels[state.payment]}</span>`;
+  document.getElementById('sum-payment-row').style.display = 'flex';
+
+  const extraRow = document.getElementById('sum-extra-row');
+  const extraKey = document.getElementById('sum-extra-key');
+  const extraVal = document.getElementById('sum-extra-val');
+
+  if (state.payment==='cash' && (state.cashApprovedBy || state.cashAmount)) {
+    let txt = '';
+    if (state.cashAmount) txt += '$'+state.cashAmount;
+    if (state.cashApprovedBy) txt += (txt?' · ':'')+state.cashApprovedBy;
+    extraKey.textContent = 'Cash detail';
+    extraVal.textContent = txt;
+    extraRow.style.display = 'flex';
+  } else if (state.payment==='personal' && (state.reimburseTo || state.reimburseAmount)) {
+    let txt = '';
+    if (state.reimburseTo) txt += state.reimburseTo;
+    if (state.reimburseAmount) txt += (txt?' · ':'')+' $'+state.reimburseAmount;
+    extraKey.textContent = 'Reimburse to';
+    extraVal.textContent = txt;
+    extraRow.style.display = 'flex';
+  } else {
+    extraRow.style.display = 'none';
+  }
 }
 
 function buildSummary() {
@@ -341,7 +433,8 @@ function buildSummary() {
     `<span class="badge badge-${state.role}">${state.role}</span>`;
   document.getElementById('sum-date').textContent  =
     months[today.getMonth()]+' '+today.getDate()+', '+today.getFullYear();
-  document.getElementById('sum-photos').textContent = '0 files';
+  document.getElementById('sum-photos').textContent = state.files.length+
+    ' file'+(state.files.length!==1?'s':'');
   if (state.role==='director' && state.center) {
     const centers = cfg.centers.length ? cfg.centers :
       [{id:'ridge',name:'Ridge'},{id:'alpha',name:'Alpha'},{id:'pearl',name:'Pearl'}];
@@ -349,17 +442,20 @@ function buildSummary() {
     document.getElementById('sum-center').textContent = c ? c.name : state.center;
     document.getElementById('sum-center-row').style.display = 'flex';
   }
+  updateSummaryPayment();
 }
 
 function handleFiles(files) {
   for (const f of files) state.files.push(f);
   renderThumbs();
 }
+
 function handleDrop(e) {
   e.preventDefault();
   document.getElementById('dropZone').classList.remove('drag');
   handleFiles(e.dataTransfer.files);
 }
+
 function renderThumbs() {
   const c = document.getElementById('thumbs');
   c.innerHTML = '';
@@ -382,12 +478,17 @@ function renderThumbs() {
     w.appendChild(del);
     c.appendChild(w);
   });
-  // Показываем summary и активируем Submit
   const hasFiles = state.files.length > 0;
   document.getElementById('summary').style.display = hasFiles ? 'block' : 'none';
-  document.getElementById('submitBtn').disabled = !hasFiles;
   document.getElementById('sum-photos').textContent =
     state.files.length + ' file'+(state.files.length!==1?'s':'');
+  checkSubmitReady();
+}
+
+function checkSubmitReady() {
+  const hasFiles   = state.files.length > 0;
+  const hasPayment = !!state.payment;
+  document.getElementById('submitBtn').disabled = !(hasFiles && hasPayment);
 }
 
 async function submitReceipt() {
@@ -398,14 +499,12 @@ async function submitReceipt() {
   err.classList.remove('visible');
   btn.disabled = true; btn.textContent = 'Uploading...';
   bar.style.display = 'block'; fill.style.width = '10%';
-
   const today   = new Date();
   const fiscal  = today.toISOString().slice(0,7);
   const dateStr = today.toISOString().slice(0,10);
   const prefix  = state.role==='director'
     ? `directors/${state.center}` : `purchasing`;
   const filePaths = [];
-
   try {
     for (let i=0; i<state.files.length; i++) {
       const f   = state.files[i];
@@ -424,23 +523,39 @@ async function submitReceipt() {
       filePaths.push(path);
       fill.style.width = (10+75*(i+1)/state.files.length)+'%';
     }
-
     fill.style.width = '90%';
+
+    // build payment_meta for cash / personal
+    let payment_meta = null;
+    if (state.payment==='cash') {
+      payment_meta = {
+        cash_amount:   state.cashAmount   || null,
+        approved_by:   state.cashApprovedBy || null
+      };
+    } else if (state.payment==='personal') {
+      payment_meta = {
+        reimburse_to:    state.reimburseTo    || null,
+        reimburse_amount: state.reimburseAmount || null
+      };
+    }
+
     const rec = {
-      center:       state.role==='director' ? state.center : 'office',
-      fiscal_month: fiscal,
-      receipt_date: dateStr,
-      vendor:       null,
-      food_amt:     null,
-      nonfood_amt:  null,
-      file_paths:   filePaths,
-      file_path:    filePaths[0]||null,
-      user_role:    state.role,
-      buyer_name:   state.name,
-      purchase_type: null,  // OCR определит автоматически
-      payment_method: state.payment || null,
-      status:       'pending'
+      center:          state.role==='director' ? state.center : 'office',
+      fiscal_month:    fiscal,
+      receipt_date:    dateStr,
+      vendor:          null,
+      food_amt:        null,
+      nonfood_amt:     null,
+      file_paths:      filePaths,
+      file_path:       filePaths[0]||null,
+      user_role:       state.role,
+      buyer_name:      state.name,
+      purchase_type:   null,
+      payment_method:  state.payment || null,
+      payment_meta:    payment_meta,
+      status:          'pending'
     };
+
     const db = await fetch(`${SUPABASE_URL}/rest/v1/receipts`, {
       method:'POST',
       headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON,
@@ -448,7 +563,6 @@ async function submitReceipt() {
       body:JSON.stringify(rec)
     });
     if (!db.ok) throw new Error('DB error: '+await db.text());
-
     fill.style.width = '100%';
     setTimeout(() => { bar.style.display='none'; showSuccess(); }, 400);
   } catch(e) {
@@ -462,24 +576,33 @@ function showSuccess() {
   for (let i=1;i<=2;i++) document.getElementById('s'+i).className='step done';
   document.getElementById('page2').classList.remove('active');
   document.getElementById('page3').classList.add('active');
+  let extra = '';
+  if (state.payment==='cash' && state.cashApprovedBy)
+    extra = `\nApproved by: ${state.cashApprovedBy}`;
+  if (state.payment==='personal' && state.reimburseTo)
+    extra = `\nReimbursement to: ${state.reimburseTo}`;
   document.getElementById('successMsg').textContent =
     `Document submitted by ${state.name}.\n` +
-    `${state.files.length} photo${state.files.length!==1?'s':''} saved.\n` +
+    `${state.files.length} photo${state.files.length!==1?'s':''} saved.${extra}\n` +
     `AI will process automatically.`;
 }
 
 function resetForm() {
-  state = {role:'',name:'',center:'',payment:'',files:[]};
+  state = {role:'',name:'',center:'',payment:'',files:[],
+           cashAmount:'',cashApprovedBy:'',reimburseTo:'',reimburseAmount:''};
   for (let i=1;i<=3;i++) {
     const p = document.getElementById('page'+i);
     if (p) p.classList.remove('active');
   }
-  document.querySelectorAll('.role-card,.pay-card').forEach(c=>c.classList.remove('selected','corporate','cash','personal'));
+  document.querySelectorAll('.role-card,.pay-card').forEach(c=>
+    c.classList.remove('selected','corporate','cash','personal'));
   document.getElementById('center-field').style.display='none';
   document.getElementById('name-field').style.display='none';
   document.getElementById('thumbs').innerHTML='';
   document.getElementById('summary').style.display='none';
   document.getElementById('submitBtn').disabled=true;
+  document.getElementById('extra-cash').classList.remove('visible');
+  document.getElementById('extra-personal').classList.remove('visible');
   for (let i=1;i<=2;i++) {
     const s=document.getElementById('s'+i); if(s) s.className='step';
   }
