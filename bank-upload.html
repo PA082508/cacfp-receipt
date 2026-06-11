@@ -253,9 +253,9 @@ let parsedRows = [];
 let csvFile = null;
 
 const BANK_HINTS = {
-  usbank:     'US Bank: Accounts → Export Transactions → Date Range → Download CSV',
-  citi:       'Citi: Account Details → Download → CSV → Select Date Range',
-  synchrony:  'Synchrony: Statements → Download Transactions → CSV Format',
+  usbank:     'US Bank: Accounts → Export Transactions → Date Range → Download CSV<br><b>Format:</b> Date, Transaction, Name, Memo, Amount',
+  citi:       'Citi: Account Details → Download → CSV → Select Date Range<br><b>Format:</b> Status, Date, Description, Debit, Credit, Member Name',
+  synchrony:  'Synchrony: Statements → Download Transactions → CSV Format<br><b>Format:</b> Date, Transaction, Name, Memo, Amount',
 };
 
 // ── PIN ──────────────────────────────────────────────────────
@@ -327,57 +327,92 @@ function handleFile(f) {
 }
 
 // ── CSV PARSER ───────────────────────────────────────────────
+function detectBankFormat(headerLine) {
+  const h = headerLine.toLowerCase();
+  if (h.includes('debit') && h.includes('credit') && h.includes('description')) return 'citi';
+  if (h.includes('transaction') && h.includes('memo')) return 'usbank';
+  return 'usbank';
+}
+
 function parseCSV(text) {
   const lines = text.trim().split('\n').filter(l => l.trim());
   if (lines.length < 2) { showErr('CSV file appears empty'); return; }
 
-  // Detect if first line is header
   const first = lines[0].toLowerCase();
   const hasHeader = first.includes('date') || first.includes('transaction') ||
-                    first.includes('amount') || first.includes('name');
-  const dataLines = hasHeader ? lines.slice(1) : lines;
+                    first.includes('amount') || first.includes('name') ||
+                    first.includes('debit') || first.includes('credit');
+
+  const headerLine = hasHeader ? lines[0] : '';
+  const dataLines  = hasHeader ? lines.slice(1) : lines;
+  const fmt        = hasHeader ? detectBankFormat(headerLine) : 'usbank';
+
+  // Auto-select bank if Citi detected
+  if (fmt === 'citi') {
+    document.getElementById('bankSelect').value = 'citi';
+    const hint = document.getElementById('bankHint');
+    hint.innerHTML = '<b>✅ Citi format detected:</b> Status · Date · Description · Debit · Credit · Member Name';
+    hint.style.display = 'block';
+  }
 
   parsedRows = [];
   const errors = [];
 
   dataLines.forEach((line, i) => {
-    // Handle quoted fields
     const cols = parseCSVLine(line);
-    if (cols.length < 5) { errors.push('Row ' + (i+1) + ': not enough columns'); return; }
+    let dateStr, transaction, name, memo, amount;
 
-    const dateStr = cols[0].trim();
-    const transaction = cols[1].trim();
-    const name = cols[2].trim();
-    const memo = cols[3].trim();
-    const amtStr = cols[4].replace(/[$,\s]/g,'').trim();
-    const amount = parseFloat(amtStr);
+    if (fmt === 'citi') {
+      // Citi: Status, Date, Description, Debit, Credit, Member Name
+      if (cols.length < 5) { errors.push('Row '+(i+1)+': not enough columns'); return; }
+      dateStr     = cols[1].trim();
+      transaction = cols[2].trim();
+      name        = cols[2].trim();
+      memo        = cols[5] ? cols[5].trim() : '';
+      const debit  = parseFloat(String(cols[3]).replace(/[$,\s]/g,'')) || 0;
+      const credit = parseFloat(String(cols[4]).replace(/[$,\s]/g,'')) || 0;
+      // Для CACFP: расходы (debit) как положительные суммы
+      amount = debit > 0 ? debit : credit;
+    } else {
+      // US Bank / Synchrony: Date, Transaction, Name, Memo, Amount
+      if (cols.length < 5) { errors.push('Row '+(i+1)+': not enough columns'); return; }
+      dateStr     = cols[0].trim();
+      transaction = cols[1].trim();
+      name        = cols[2].trim();
+      memo        = cols[3].trim();
+      amount      = parseFloat(String(cols[4]).replace(/[$,\s]/g,''));
+    }
 
-    if (!dateStr || isNaN(amount)) { errors.push('Row '+(i+1)+': invalid date or amount'); return; }
+    if (!dateStr || isNaN(amount)) {
+      errors.push('Row '+(i+1)+': invalid date or amount'); return;
+    }
 
-    // Parse date — US Bank format: MM/DD/YYYY or YYYY-MM-DD
+    // Parse date — supports MM/DD/YYYY, YYYY-MM-DD, MM-DD-YYYY
     let isoDate = '';
-    if (dateStr.includes('/')) {
+    if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      isoDate = dateStr;
+    } else if (dateStr.includes('/')) {
       const parts = dateStr.split('/');
       if (parts.length === 3) {
         const yr = parts[2].length === 2 ? '20'+parts[2] : parts[2];
         isoDate = yr + '-' + parts[0].padStart(2,'0') + '-' + parts[1].padStart(2,'0');
       }
-    } else {
-      isoDate = dateStr;
+    } else if (dateStr.match(/^\d{1,2}-\d{1,2}-\d{4}$/)) {
+      const parts = dateStr.split('-');
+      isoDate = parts[2] + '-' + parts[0].padStart(2,'0') + '-' + parts[1].padStart(2,'0');
     }
 
     if (!isoDate) { errors.push('Row '+(i+1)+': cannot parse date: '+dateStr); return; }
 
-    parsedRows.push({ trans_date: isoDate, transaction, name, memo, amount });
+    parsedRows.push({ trans_date: isoDate, transaction, name, memo, amount: Math.abs(amount) });
   });
 
-  // Update file meta
   document.getElementById('fileMeta').textContent =
     (csvFile.size/1024).toFixed(1) + ' KB  ·  ' +
     parsedRows.length + ' transactions' +
-    (errors.length ? '  ·  ⚠️ ' + errors.length + ' skipped' : '');
+    (errors.length ? '  ·  ⚠️ ' + errors.length + ' skipped' : '') +
+    '  ·  ' + fmt.toUpperCase();
 
-  // Show preview
   showPreview(parsedRows.slice(0,5));
 
   if (parsedRows.length > 0) {
@@ -386,7 +421,6 @@ function parseCSV(text) {
     showErr('No valid rows found. ' + errors.slice(0,3).join('; '));
   }
 }
-
 function parseCSVLine(line) {
   const cols = [];
   let cur = '';
