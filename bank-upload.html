@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f1117">
+<title>Bank Upload — CACFP</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400&display=swap');
+  :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2a2d3a;--accent:#4f8ef7;--green:#38d9a9;--amber:#f5a623;--danger:#ff6b6b;--text:#e8eaf0;--muted:#6b7280;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px;}
+
+  /* Lock */
+  .lock{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;padding:24px;}
+  .lock-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px 28px;width:100%;max-width:340px;text-align:center;}
+  .lock-icon{font-size:40px;margin-bottom:14px;}
+  .lock-title{font-size:18px;font-weight:600;margin-bottom:4px;}
+  .lock-sub{font-size:13px;color:var(--muted);margin-bottom:22px;}
+  .pin-row{display:flex;gap:10px;justify-content:center;margin-bottom:18px;}
+  .pin-dot{width:13px;height:13px;border-radius:50%;background:var(--border);transition:background .2s;}
+  .pin-dot.filled{background:var(--accent);}
+  .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:220px;margin:0 auto;}
+  .num-btn{background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:20px;font-weight:500;padding:15px;cursor:pointer;transition:all .15s;}
+  .num-btn:hover{background:rgba(79,142,247,.15);border-color:var(--accent);}
+  .num-btn:active{transform:scale(.95);}
+  .pin-err{color:var(--danger);font-size:13px;margin-top:12px;height:18px;}
+
+  /* Main */
+  .main{display:none;}
+  .header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:12px;}
+  .header-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--green));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .header-title{font-size:15px;font-weight:600;}
+  .header-sub{font-size:11px;color:var(--muted);}
+  .header-right{margin-left:auto;}
+  .lock-btn{background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;}
+
+  .container{max-width:640px;margin:0 auto;padding:20px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:16px;overflow:hidden;}
+  .section-hdr{padding:14px 18px;border-bottom:1px solid var(--border);font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;}
+  .section-body{padding:16px 18px;}
+
+  .field{margin-bottom:14px;}
+  .label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+  select,input[type=text]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:11px 14px;outline:none;transition:border-color .2s;appearance:none;}
+  select:focus,input:focus{border-color:var(--accent);}
+
+  .upload-zone{border:2px dashed var(--border);border-radius:14px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;margin-bottom:14px;}
+  .upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(79,142,247,.04);}
+  .upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+  .upload-icon{font-size:40px;margin-bottom:10px;}
+  .upload-label{font-size:15px;font-weight:600;margin-bottom:4px;}
+  .upload-hint{font-size:12px;color:var(--muted);}
+
+  .file-info{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:none;margin-bottom:14px;}
+  .file-name{font-size:13px;font-weight:600;color:var(--green);}
+  .file-meta{font-size:12px;color:var(--muted);margin-top:2px;}
+
+  .preview-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;}
+  .preview-table th{background:var(--surface2);color:var(--muted);padding:6px 10px;text-align:left;font-weight:600;border-bottom:1px solid var(--border);}
+  .preview-table td{padding:6px 10px;border-bottom:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;}
+  .preview-table tr:last-child td{border-bottom:none;}
+  .preview-table tr:nth-child(even) td{background:rgba(255,255,255,.02);}
+
+  .btn{width:100%;padding:14px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;border:none;transition:all .15s;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{background:#3a7de8;}
+  .btn-primary:disabled{background:var(--border);color:var(--muted);cursor:not-allowed;}
+  .btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--muted);}
+
+  .progress{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin:12px 0;display:none;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));width:0%;transition:width .3s;}
+
+  .result-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+  .result-row:last-child{border-bottom:none;}
+  .result-key{color:var(--muted);}
+  .result-val{font-weight:600;}
+  .tag{display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600;}
+  .tag-green{background:rgba(56,217,169,.12);color:var(--green);}
+  .tag-amber{background:rgba(245,166,35,.12);color:var(--amber);}
+  .tag-red{background:rgba(255,107,107,.12);color:var(--danger);}
+
+  .err{background:rgba(255,107,107,.1);border:1px solid var(--danger);border-radius:10px;padding:12px;font-size:13px;color:var(--danger);margin-bottom:14px;display:none;}
+  .err.show{display:block;}
+
+  .notice{background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:14px;}
+  .notice b{color:var(--text);}
+</style>
+</head>
+<body>
+
+<!-- LOCK -->
+<div class="lock" id="lockScreen">
+  <div class="lock-card">
+    <div class="lock-icon">🏦</div>
+    <div class="lock-title">Bank CSV Upload</div>
+    <div class="lock-sub">Enter Admin PIN</div>
+    <div class="pin-row">
+      <div class="pin-dot" id="d1"></div><div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div><div class="pin-dot" id="d4"></div>
+      <div class="pin-dot" id="d5"></div>
+    </div>
+    <div class="numpad">
+      <button class="num-btn" onclick="pinPress('1')">1</button>
+      <button class="num-btn" onclick="pinPress('2')">2</button>
+      <button class="num-btn" onclick="pinPress('3')">3</button>
+      <button class="num-btn" onclick="pinPress('4')">4</button>
+      <button class="num-btn" onclick="pinPress('5')">5</button>
+      <button class="num-btn" onclick="pinPress('6')">6</button>
+      <button class="num-btn" onclick="pinPress('7')">7</button>
+      <button class="num-btn" onclick="pinPress('8')">8</button>
+      <button class="num-btn" onclick="pinPress('9')">9</button>
+      <button class="num-btn" onclick="pinPress('0')" style="grid-column:2">0</button>
+      <button class="num-btn" onclick="pinDel()">⌫</button>
+    </div>
+    <div class="pin-err" id="pinErr"></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="mainUI">
+  <div class="header">
+    <div class="header-icon">🏦</div>
+    <div>
+      <div class="header-title">Bank CSV Upload</div>
+      <div class="header-sub">CACFP Bank Reconciliation</div>
+    </div>
+    <div class="header-right">
+      <button class="lock-btn" onclick="lockApp()">🔒 Lock</button>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- STEP 1: SELECT BANK -->
+    <div class="section">
+      <div class="section-hdr">🏦 Step 1 — Select Bank & Account</div>
+      <div class="section-body">
+        <div class="field">
+          <label class="label">Bank</label>
+          <select id="bankSelect" onchange="onBankChange()">
+            <option value="">-- Select bank --</option>
+            <option value="usbank">US Bank</option>
+            <option value="citi">Citi</option>
+            <option value="synchrony">Synchrony</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label">Account Type</label>
+          <select id="accountType">
+            <option value="corporate_purchasing">Corporate — Purchasing Staff</option>
+            <option value="corporate_director">Corporate — Directors</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label">Statement Period</label>
+          <input type="text" id="period" placeholder="e.g. May 2026">
+        </div>
+        <div class="notice" id="bankHint" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- STEP 2: UPLOAD CSV -->
+    <div class="section">
+      <div class="section-hdr">📄 Step 2 — Upload CSV File</div>
+      <div class="section-body">
+        <div class="notice">
+          <b>US Bank CSV format:</b> Date, Transaction, Name, Memo, Amount<br>
+          Download from: Online Banking → Accounts → Export → CSV
+        </div>
+
+        <div class="upload-zone" id="dropZone"
+          ondragover="event.preventDefault();this.classList.add('drag')"
+          ondragleave="this.classList.remove('drag')"
+          ondrop="handleDrop(event)">
+          <input type="file" id="csvFile" accept=".csv" onchange="handleFile(this.files[0])">
+          <div class="upload-icon">📊</div>
+          <div class="upload-label">Tap to select CSV file</div>
+          <div class="upload-hint">From US Bank · Citi · Synchrony</div>
+        </div>
+
+        <div class="file-info" id="fileInfo">
+          <div class="file-name" id="fileName"></div>
+          <div class="file-meta" id="fileMeta"></div>
+        </div>
+
+        <!-- Preview -->
+        <div id="previewWrap" style="display:none">
+          <div class="label" style="margin-bottom:8px">Preview (first 5 rows)</div>
+          <div style="overflow-x:auto">
+            <table class="preview-table" id="previewTable"></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: UPLOAD -->
+    <div class="section">
+      <div class="section-hdr">⬆️ Step 3 — Import to Database</div>
+      <div class="section-body">
+        <div class="err" id="errBox"></div>
+        <div class="progress" id="progressBar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div id="resultBox" style="display:none;margin-bottom:14px">
+          <div class="result-row">
+            <span class="result-key">Total rows in CSV</span>
+            <span class="result-val" id="resCsvTotal"></span>
+          </div>
+          <div class="result-row">
+            <span class="result-key">Imported</span>
+            <span class="result-val"><span class="tag tag-green" id="resImported"></span></span>
+          </div>
+          <div class="result-row">
+            <span class="result-key">Skipped (duplicates)</span>
+            <span class="result-val"><span class="tag tag-amber" id="resSkipped"></span></span>
+          </div>
+          <div class="result-row">
+            <span class="result-key">Errors</span>
+            <span class="result-val"><span class="tag tag-red" id="resErrors"></span></span>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="uploadBtn" onclick="uploadCSV()" disabled>
+          ⬆️ Import to Supabase
+        </button>
+        <div style="height:10px"></div>
+        <button class="btn btn-ghost" onclick="resetForm()">↺ Upload Another</button>
+      </div>
+    </div>
+
+    <!-- RECENT UPLOADS -->
+    <div class="section">
+      <div class="section-hdr">📋 Recent Uploads</div>
+      <div class="section-body" id="recentUploads">
+        <div style="color:var(--muted);font-size:13px;text-align:center;padding:10px 0">Loading...</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL  = 'https://rkabxzqcikojcphwrkty.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrYWJ4enFjaWtvamNwaHdya3R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NjIwNjMsImV4cCI6MjA5NTIzODA2M30.AtizV_nwkpB4bzZKLp6oE8wnd3RmrhUNjJWBnp7HGVw';
+const PIN = '44092';
+
+let pin = '';
+let parsedRows = [];
+let csvFile = null;
+
+const BANK_HINTS = {
+  usbank:     'US Bank: Accounts → Export Transactions → Date Range → Download CSV',
+  citi:       'Citi: Account Details → Download → CSV → Select Date Range',
+  synchrony:  'Synchrony: Statements → Download Transactions → CSV Format',
+};
+
+// ── PIN ──────────────────────────────────────────────────────
+function pinPress(d) {
+  if (pin.length >= 5) return;
+  pin += d;
+  updateDots();
+  if (pin.length === 5) checkPin();
+}
+function pinDel() {
+  pin = pin.slice(0,-1);
+  updateDots();
+  document.getElementById('pinErr').textContent = '';
+}
+function updateDots() {
+  for (let i=1;i<=5;i++)
+    document.getElementById('d'+i).className='pin-dot'+(i<=pin.length?' filled':'');
+}
+function checkPin() {
+  if (pin === PIN) {
+    document.getElementById('lockScreen').style.display='none';
+    document.getElementById('mainUI').style.display='block';
+    loadRecent();
+  } else {
+    document.getElementById('pinErr').textContent='Incorrect PIN';
+    setTimeout(()=>{ pin=''; updateDots(); document.getElementById('pinErr').textContent=''; },1000);
+  }
+}
+function lockApp() {
+  pin=''; updateDots();
+  document.getElementById('mainUI').style.display='none';
+  document.getElementById('lockScreen').style.display='flex';
+}
+
+// ── BANK HINT ────────────────────────────────────────────────
+function onBankChange() {
+  const bank = document.getElementById('bankSelect').value;
+  const hint = document.getElementById('bankHint');
+  if (bank && BANK_HINTS[bank]) {
+    hint.innerHTML = '<b>How to export:</b> ' + BANK_HINTS[bank];
+    hint.style.display = 'block';
+  } else {
+    hint.style.display = 'none';
+  }
+}
+
+// ── FILE HANDLING ────────────────────────────────────────────
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile(f);
+}
+
+function handleFile(f) {
+  if (!f || !f.name.endsWith('.csv')) {
+    showErr('Please select a CSV file');
+    return;
+  }
+  csvFile = f;
+  document.getElementById('fileName').textContent = f.name;
+  document.getElementById('fileMeta').textContent =
+    (f.size/1024).toFixed(1) + ' KB';
+  document.getElementById('fileInfo').style.display = 'block';
+
+  const reader = new FileReader();
+  reader.onload = e => parseCSV(e.target.result);
+  reader.readAsText(f);
+}
+
+// ── CSV PARSER ───────────────────────────────────────────────
+function parseCSV(text) {
+  const lines = text.trim().split('\n').filter(l => l.trim());
+  if (lines.length < 2) { showErr('CSV file appears empty'); return; }
+
+  // Detect if first line is header
+  const first = lines[0].toLowerCase();
+  const hasHeader = first.includes('date') || first.includes('transaction') ||
+                    first.includes('amount') || first.includes('name');
+  const dataLines = hasHeader ? lines.slice(1) : lines;
+
+  parsedRows = [];
+  const errors = [];
+
+  dataLines.forEach((line, i) => {
+    // Handle quoted fields
+    const cols = parseCSVLine(line);
+    if (cols.length < 5) { errors.push('Row ' + (i+1) + ': not enough columns'); return; }
+
+    const dateStr = cols[0].trim();
+    const transaction = cols[1].trim();
+    const name = cols[2].trim();
+    const memo = cols[3].trim();
+    const amtStr = cols[4].replace(/[$,\s]/g,'').trim();
+    const amount = parseFloat(amtStr);
+
+    if (!dateStr || isNaN(amount)) { errors.push('Row '+(i+1)+': invalid date or amount'); return; }
+
+    // Parse date — US Bank format: MM/DD/YYYY or YYYY-MM-DD
+    let isoDate = '';
+    if (dateStr.includes('/')) {
+      const parts = dateStr.split('/');
+      if (parts.length === 3) {
+        const yr = parts[2].length === 2 ? '20'+parts[2] : parts[2];
+        isoDate = yr + '-' + parts[0].padStart(2,'0') + '-' + parts[1].padStart(2,'0');
+      }
+    } else {
+      isoDate = dateStr;
+    }
+
+    if (!isoDate) { errors.push('Row '+(i+1)+': cannot parse date: '+dateStr); return; }
+
+    parsedRows.push({ trans_date: isoDate, transaction, name, memo, amount });
+  });
+
+  // Update file meta
+  document.getElementById('fileMeta').textContent =
+    (csvFile.size/1024).toFixed(1) + ' KB  ·  ' +
+    parsedRows.length + ' transactions' +
+    (errors.length ? '  ·  ⚠️ ' + errors.length + ' skipped' : '');
+
+  // Show preview
+  showPreview(parsedRows.slice(0,5));
+
+  if (parsedRows.length > 0) {
+    document.getElementById('uploadBtn').disabled = false;
+  } else {
+    showErr('No valid rows found. ' + errors.slice(0,3).join('; '));
+  }
+}
+
+function parseCSVLine(line) {
+  const cols = [];
+  let cur = '';
+  let inQuote = false;
+  for (let i=0; i<line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQuote = !inQuote; }
+    else if (c === ',' && !inQuote) { cols.push(cur); cur = ''; }
+    else { cur += c; }
+  }
+  cols.push(cur);
+  return cols;
+}
+
+function showPreview(rows) {
+  const wrap = document.getElementById('previewWrap');
+  const tbl  = document.getElementById('previewTable');
+  tbl.innerHTML = `
+    <tr>
+      <th>Date</th><th>Transaction</th><th>Name</th><th>Memo</th><th>Amount</th>
+    </tr>` +
+    rows.map(r => `<tr>
+      <td>${r.trans_date}</td>
+      <td>${r.transaction.substring(0,20)}</td>
+      <td>${r.name.substring(0,20)}</td>
+      <td>${r.memo.substring(0,20)}</td>
+      <td style="color:${r.amount<0?'var(--danger)':'var(--green)'}">${r.amount}</td>
+    </tr>`).join('');
+  wrap.style.display = 'block';
+}
+
+// ── UPLOAD TO SUPABASE ───────────────────────────────────────
+async function uploadCSV() {
+  const bank    = document.getElementById('bankSelect').value;
+  const acct    = document.getElementById('accountType').value;
+  const period  = document.getElementById('period').value;
+
+  if (!bank) { showErr('Please select a bank'); return; }
+  if (!parsedRows.length) { showErr('No data to upload'); return; }
+
+  document.getElementById('uploadBtn').disabled = true;
+  document.getElementById('uploadBtn').textContent = 'Uploading...';
+  document.getElementById('progressBar').style.display = 'block';
+  document.getElementById('progressFill').style.width = '10%';
+  hideErr();
+
+  let imported = 0, skipped = 0, errors = 0;
+  const batchSize = 50;
+
+  for (let i=0; i<parsedRows.length; i+=batchSize) {
+    const batch = parsedRows.slice(i, i+batchSize).map(r => ({
+      bank,
+      account_type:  acct,
+      statement_period: period || null,
+      trans_date:    r.trans_date,
+      transaction:   r.transaction,
+      name:          r.name,
+      memo:          r.memo,
+      amount:        r.amount,
+      match_status:  'unmatched'
+    }));
+
+    try {
+      const res = await fetch(
+        SUPABASE_URL + '/rest/v1/bank_transactions',
+        {
+          method: 'POST',
+          headers: {
+            'apikey':       SUPABASE_ANON,
+            'Authorization':'Bearer ' + SUPABASE_ANON,
+            'Content-Type': 'application/json',
+            'Prefer':       'resolution=ignore-duplicates,return=minimal'
+          },
+          body: JSON.stringify(batch)
+        }
+      );
+      if (res.ok) imported += batch.length;
+      else { const t = await res.text(); errors += batch.length; console.error(t); }
+    } catch(e) {
+      errors += batch.length;
+    }
+
+    const pct = 10 + 80 * (i + batchSize) / parsedRows.length;
+    document.getElementById('progressFill').style.width = Math.min(pct, 90) + '%';
+  }
+
+  document.getElementById('progressFill').style.width = '100%';
+  setTimeout(() => {
+    document.getElementById('progressBar').style.display = 'none';
+    showResult(parsedRows.length, imported, skipped, errors);
+    loadRecent();
+  }, 400);
+}
+
+function showResult(total, imported, skipped, errors) {
+  document.getElementById('resCsvTotal').textContent = total;
+  document.getElementById('resImported').textContent = imported;
+  document.getElementById('resSkipped').textContent  = skipped;
+  document.getElementById('resErrors').textContent   = errors;
+  document.getElementById('resultBox').style.display = 'block';
+  document.getElementById('uploadBtn').textContent = '✅ Done';
+}
+
+// ── RECENT UPLOADS ───────────────────────────────────────────
+async function loadRecent() {
+  try {
+    const res = await fetch(
+      SUPABASE_URL + '/rest/v1/bank_transactions' +
+      '?select=bank,trans_date,name,amount,match_status' +
+      '&order=created_at.desc&limit=10',
+      { headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON} }
+    );
+    const rows = await res.json();
+    const el = document.getElementById('recentUploads');
+
+    if (!rows.length) {
+      el.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:10px 0">No transactions yet</div>';
+      return;
+    }
+
+    const bankColors = {usbank:'var(--accent)',citi:'var(--amber)',synchrony:'var(--green)'};
+    el.innerHTML = rows.map(r => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+        <div>
+          <span style="font-weight:600;color:${bankColors[r.bank]||'var(--text)'}">
+            ${r.bank ? r.bank.toUpperCase() : '—'}
+          </span>
+          <span style="color:var(--muted);margin-left:8px">${r.trans_date}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="color:${r.amount<0?'var(--danger)':'var(--green)'}">
+            $${Math.abs(r.amount).toFixed(2)}
+          </span>
+          <span style="font-size:11px;padding:2px 7px;border-radius:5px;
+            background:${r.match_status==='matched'?'rgba(56,217,169,.12)':'rgba(245,166,35,.12)'};
+            color:${r.match_status==='matched'?'var(--green)':'var(--amber)'}">
+            ${r.match_status}
+          </span>
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    document.getElementById('recentUploads').innerHTML =
+      '<div style="color:var(--muted);font-size:13px">Error loading recent uploads</div>';
+  }
+}
+
+function showErr(msg) {
+  const el = document.getElementById('errBox');
+  el.textContent = msg; el.classList.add('show');
+}
+function hideErr() { document.getElementById('errBox').classList.remove('show'); }
+
+function resetForm() {
+  parsedRows = []; csvFile = null;
+  document.getElementById('bankSelect').value = '';
+  document.getElementById('period').value = '';
+  document.getElementById('fileInfo').style.display = 'none';
+  document.getElementById('previewWrap').style.display = 'none';
+  document.getElementById('resultBox').style.display = 'none';
+  document.getElementById('bankHint').style.display = 'none';
+  document.getElementById('uploadBtn').disabled = true;
+  document.getElementById('uploadBtn').textContent = '⬆️ Import to Supabase';
+  document.getElementById('csvFile').value = '';
+  hideErr();
+}
+</script>
+</body>
+</html>
