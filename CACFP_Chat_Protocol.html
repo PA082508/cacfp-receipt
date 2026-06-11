@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CACFP Chat Protocol</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400&display=swap');
+  :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2a2d3a;--accent:#4f8ef7;--green:#38d9a9;--amber:#f5a623;--danger:#ff6b6b;--text:#e8eaf0;--muted:#6b7280;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);padding:24px 20px 60px;max-width:720px;margin:0 auto;}
+
+  .header{text-align:center;padding:32px 0 24px;}
+  .header-icon{font-size:48px;margin-bottom:12px;}
+  .header-title{font-size:28px;font-weight:600;margin-bottom:6px;}
+  .header-sub{font-size:14px;color:var(--muted);}
+
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:16px;overflow:hidden;}
+  .section-header{padding:14px 18px;display:flex;align-items:center;gap:10px;}
+  .section-title{font-size:15px;font-weight:600;}
+  .section-icon{font-size:18px;}
+  .section-body{padding:0 18px 16px;}
+
+  .step{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+  .step:last-child{border-bottom:none;}
+  .step-num{width:28px;height:28px;min-width:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;}
+  .step-num.green{background:rgba(56,217,169,.15);color:var(--green);}
+  .step-num.red{background:rgba(255,107,107,.15);color:var(--danger);}
+  .step-num.blue{background:rgba(79,142,247,.15);color:var(--accent);}
+  .step-text{font-size:13px;line-height:1.6;color:var(--text);}
+  .step-text b{color:var(--green);}
+  .step-text .muted{color:var(--muted);}
+
+  code{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);}
+
+  pre{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);white-space:pre-wrap;margin:8px 0;line-height:1.6;}
+
+  .table{width:100%;border-collapse:collapse;margin:8px 0;}
+  .table th{background:var(--surface2);color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);}
+  .table td{padding:8px 12px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.5;}
+  .table tr:last-child td{border-bottom:none;}
+  .table tr:nth-child(even) td{background:rgba(255,255,255,.02);}
+
+  .badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600;}
+  .badge-green{background:rgba(56,217,169,.12);color:var(--green);}
+  .badge-blue{background:rgba(79,142,247,.12);color:var(--accent);}
+  .badge-amber{background:rgba(245,166,35,.12);color:var(--amber);}
+
+  .agent-card{border-radius:10px;padding:12px 14px;margin:8px 0;}
+  .agent-architect{background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);}
+  .agent-developer{background:rgba(56,217,169,.08);border:1px solid rgba(56,217,169,.2);}
+  .agent-controller{background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);}
+  .agent-title{font-size:13px;font-weight:600;margin-bottom:4px;}
+  .agent-desc{font-size:12px;color:var(--muted);line-height:1.5;}
+
+  .links{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0;}
+  .link-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-decoration:none;transition:border-color .15s;}
+  .link-card:hover{border-color:var(--accent);}
+  .link-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px;}
+  .link-url{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+  .divider{height:1px;background:var(--border);margin:8px 0;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">📋</div>
+  <div class="header-title">CACFP Chat Protocol</div>
+  <div class="header-sub">Play Academy Child Care · Northeast Ohio · 2026</div>
+</div>
+
+<!-- START -->
+<div class="section">
+  <div class="section-header" style="background:rgba(56,217,169,.08);border-bottom:1px solid var(--border)">
+    <span class="section-icon">🟢</span>
+    <span class="section-title">НАЧАЛО ЧАТА</span>
+  </div>
+  <div class="section-body" style="padding-top:14px">
+
+    <div class="step">
+      <div class="step-num green">1</div>
+      <div class="step-text">
+        <b>Первое сообщение:</b><br>
+        <pre>Продолжаем CACFP. [Агент: DEVELOPER / ARCHITECT / CONTROLLER]
+Задача: [одно предложение что нужно сделать]</pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num green">2</div>
+      <div class="step-text">
+        <b>Прикрепите</b> файл <code>CACFP_Context.md</code> если новый чат.<br>
+        <span class="muted">Или просто напишите "читай память" — контекст сохранён.</span>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num green">3</div>
+      <div class="step-text">
+        <b>Укажите агента</b> — Claude сразу возьмёт правильную роль.<br>
+        <span class="muted">Промпты агентов в Notebook → лист Agents.</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- END -->
+<div class="section">
+  <div class="section-header" style="background:rgba(255,107,107,.08);border-bottom:1px solid var(--border)">
+    <span class="section-icon">🔴</span>
+    <span class="section-title">КОНЕЦ ЧАТА</span>
+  </div>
+  <div class="section-body" style="padding-top:14px">
+
+    <div class="step">
+      <div class="step-num red">1</div>
+      <div class="step-text">
+        <b>Запросите ревизию:</b><br>
+        <pre>Завершаем чат. Дай артефакт для Notebook.</pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num red">2</div>
+      <div class="step-text">
+        <b>Получите</b> <code>runRevision_ДДММГГГГ.gs</code><br>
+        Вставьте в конец скрипта Notebook → запустите функцию.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num red">3</div>
+      <div class="step-text">
+        <b>Если были архитектурные изменения:</b><br>
+        <pre>Обнови Administrator's Notebook</pre>
+        Получите обновлённый <code>.docx</code>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- AGENTS -->
+<div class="section">
+  <div class="section-header" style="background:rgba(79,142,247,.08);border-bottom:1px solid var(--border)">
+    <span class="section-icon">🤖</span>
+    <span class="section-title">ТРИ АГЕНТА</span>
+  </div>
+  <div class="section-body" style="padding-top:14px">
+
+    <div class="agent-card agent-architect">
+      <div class="agent-title">🏛️ ARCHITECT — Задача + Проектирование</div>
+      <div class="agent-desc">Проектирует архитектуру · ставит задачи · следит за принципами · НЕ пишет код<br>
+      <b style="color:var(--accent)">Выход →</b> заполняет Handoff: TASK · DESIGN · CONSTRAINTS · DONE_WHEN</div>
+    </div>
+
+    <div class="agent-card agent-developer">
+      <div class="agent-title">⚙️ DEVELOPER — Логика + Реализация</div>
+      <div class="agent-desc">Пишет код · Apps Script · HTML · SQL · следует принципам<br>
+      <b style="color:var(--green)">Выход →</b> заполняет Handoff: RESULT · FILES_CHANGED · TESTED · KNOWN_ISSUES</div>
+    </div>
+
+    <div class="agent-card agent-controller">
+      <div class="agent-title">🎯 CONTROLLER — Контроль + Notebook</div>
+      <div class="agent-desc">Проверяет результат · обновляет Notebook · архивирует Handoff<br>
+      <b style="color:var(--amber)">Выход →</b> runRevision_() · Handoff_History · готовит следующую сессию</div>
+    </div>
+
+    <div class="divider"></div>
+    <p style="font-size:12px;color:var(--muted);margin-top:8px">
+      Порядок: <b style="color:var(--accent)">ARCHITECT</b> →
+      <b style="color:var(--green)">DEVELOPER</b> →
+      <b style="color:var(--amber)">CONTROLLER</b> → повтор
+    </p>
+
+  </div>
+</div>
+
+<!-- ARTIFACTS -->
+<div class="section">
+  <div class="section-header" style="background:rgba(79,142,247,.08);border-bottom:1px solid var(--border)">
+    <span class="section-icon">📦</span>
+    <span class="section-title">ЧТО ДАЁТ CLAUDE</span>
+  </div>
+  <div class="section-body" style="padding-top:10px">
+    <table class="table">
+      <tr><th>Ситуация</th><th>Артефакт</th></tr>
+      <tr><td>Код Apps Script</td><td><code>.gs</code> файл</td></tr>
+      <tr><td>Код Receipt App</td><td><code>index.html</code> или <code>settings.html</code></td></tr>
+      <tr><td>SQL Supabase</td><td>Текст в чате → SQL Editor</td></tr>
+      <tr><td>Документация</td><td><code>.md</code> или <code>.docx</code></td></tr>
+      <tr><td>Ревизия Notebook</td><td><code>runRevision_().gs</code></td></tr>
+      <tr><td>Handoff следующей сессии</td><td><code>.gs</code> с заполненным Handoff</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- LINKS -->
+<div class="section">
+  <div class="section-header" style="border-bottom:1px solid var(--border)">
+    <span class="section-icon">🔗</span>
+    <span class="section-title">БЫСТРЫЕ ССЫЛКИ</span>
+  </div>
+  <div class="section-body" style="padding-top:14px">
+    <div class="links">
+      <a class="link-card" href="https://pa082508.github.io/cacfp-receipt" target="_blank">
+        <div class="link-name">📱 Receipt Upload App</div>
+        <div class="link-url">pa082508.github.io/cacfp-receipt</div>
+      </a>
+      <a class="link-card" href="https://pa082508.github.io/cacfp-receipt/settings.html" target="_blank">
+        <div class="link-name">⚙️ Admin Settings</div>
+        <div class="link-url">…/settings.html · PIN: 44092</div>
+      </a>
+      <a class="link-card" href="https://supabase.com/dashboard/project/rkabxzqcikojcphwrkty" target="_blank">
+        <div class="link-name">🗄️ Supabase Dashboard</div>
+        <div class="link-url">childcare-core · AWS us-east-2</div>
+      </a>
+      <a class="link-card" href="https://github.com/PA082508/cacfp-receipt" target="_blank">
+        <div class="link-name">💻 GitHub Repo</div>
+        <div class="link-url">PA082508/cacfp-receipt</div>
+      </a>
+      <a class="link-card" href="https://console.anthropic.com" target="_blank">
+        <div class="link-name">🤖 Anthropic Console</div>
+        <div class="link-url">OCR API · $5 credits</div>
+      </a>
+      <a class="link-card" href="https://sites.google.com/view/cacfpreceiptentry" target="_blank">
+        <div class="link-name">🌐 Google Sites</div>
+        <div class="link-url">cacfpreceiptentry</div>
+      </a>
+    </div>
+  </div>
+    <button onclick="openModal()" style="width:100%;margin-top:12px;background:rgba(56,217,169,.12);border:1px solid rgba(56,217,169,.3);border-radius:10px;color:#38d9a9;padding:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+      📋 Open CACFP_Context.md — Copy for new chat
+    </button>
+</div>
+</div>
+
+<!-- WORKFLOW -->
+<div class="section">
+  <div class="section-header" style="border-bottom:1px solid var(--border)">
+    <span class="section-icon">🔄</span>
+    <span class="section-title">WORKFLOW МЕЖДУ ЧАТАМИ</span>
+  </div>
+  <div class="section-body" style="padding-top:14px">
+    <pre>Чат N заканчивается:
+  → Claude даёт runRevision_ДДММГГГГ.gs
+  → Вставить в конец скрипта Notebook
+  → Запустить функцию → Notebook обновлён
+  → Handoff заполнен для следующей сессии
+
+Чат N+1 начинается:
+  → "Продолжаем CACFP. Агент: ... Задача: ..."
+  → Claude читает память → контекст восстановлен
+  → Продолжаем без повторений</pre>
+  </div>
+</div>
+
+<p style="text-align:center;color:var(--muted);font-size:12px;margin-top:24px">
+  Play Academy Child Care · CACFP System · v1.0 · June 2026
+</p>
+
+
+<!-- CONTEXT MODAL -->
+<div id="ctxModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;overflow-y:auto;padding:20px;">
+  <div style="background:#1a1d27;border:1px solid #2a2d3a;border-radius:14px;max-width:720px;margin:0 auto;padding:24px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <span style="font-size:16px;font-weight:600;color:#e8eaf0;">📋 CACFP_Context.md</span>
+      <button onclick="closeModal()" style="background:rgba(255,107,107,.15);border:1px solid rgba(255,107,107,.3);border-radius:8px;color:#ff6b6b;padding:6px 14px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">✕ Close</button>
+    </div>
+    <div style="background:#0f1117;border:1px solid #2a2d3a;border-radius:10px;padding:16px;margin-bottom:14px;max-height:50vh;overflow-y:auto;">
+      <pre id="ctxContent" style="font-family:'DM Mono',monospace;font-size:11px;color:#38d9a9;white-space:pre-wrap;line-height:1.6;margin:0;"></pre>
+    </div>
+    <button onclick="copyContext()" id="copyBtn" style="width:100%;background:#4f8ef7;border:none;border-radius:10px;color:#fff;padding:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;">📋 Copy All — Paste into Claude chat</button>
+  </div>
+</div>
+
+<!-- CONTEXT BUTTON — add before closing </div> of links section -->
+<script>
+const CONTEXT_MD = `# CACFP System — Context for New Chat
+
+## Продолжаем разработку CACFP системы
+
+---
+
+## Инфраструктура
+
+| | |
+|---|---|
+| **Google Sheets** | Reports_CACFP |
+| **Apps Script** | CACFP_Complete.gs (~1850 строк) |
+| **GitHub** | pa082508.github.io/cacfp-receipt |
+| **Supabase** | rkabxzqcikojcphwrkty.supabase.co |
+| **Supabase ANON** | eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrYWJ4enFjaWtvamNwaHdya3R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NjIwNjMsImV4cCI6MjA5NTIzODA2M30.AtizV_nwkpB4bzZKLp6oE8wnd3RmrhUNjJWBnp7HGVw |
+| **Anthropic API** | В Apps Script Properties → ANTHROPIC_KEY · $5 credits · claude-sonnet-4-6 |
+
+---
+
+## Три центра
+
+| Центр | Город | Директор |
+|---|---|---|
+| Ridge | Wickliffe | Sonia Texidor |
+| Alpha | Highland Heights | Theresa Rolf |
+| Pearl | Parma Heights | Carmen Santiago |
+
+**Purchasing Staff (office):** Tatiana · Larysa · Philippe · Ross
+
+---
+
+## Что сделано ✅
+
+### Apps Script (CACFP_Complete.gs)
+- **🥛 FoodCost меню:** Sort by Date · Save Final PDF · Create New Month · Create Purchasing Form · Create Templates · 🔍 Process Pending Receipts
+- **📋 Worksheet меню:** Refresh All Formulas · Add Row Here · Remove Row Here · Create New Month
+- **📦 Inventory меню:** Refresh Formulas · Add Item Row · Remove Item Row · Create New Year
+- **OCR:** Process Pending Receipts → Claude Vision → auto-import в FoodCost лист
+- **Dedup:** receipt_id в скрытой колонке H
+
+### Receipt Upload App
+- **URL:** https://pa082508.github.io/cacfp-receipt
+- **2 шага:** Кто я (роль+центр+имя) → Фото + способ оплаты
+- **Оплата:** 💳 Corporate Card · 💵 Cash · 👤 Personal Card
+- **Settings:** https://pa082508.github.io/cacfp-receipt/settings.html · PIN: 44092
+
+### Supabase
+- **Таблица receipts:** id · center · fiscal_month · receipt_date · vendor · file_paths[] · food_amt · nonfood_amt · non_cacfp_amt · milk_whole · milk_skim · milk_pct1 · notes · status · user_role · buyer_name · purchase_type · card_last4 · card_type · payment_method
+- **Таблица app_settings:** centers · staff · purchase_types (jsonb)
+- **Storage:** receipts (private) · assets (public)
+- **RLS:** allow_insert · allow_select · allow_update (anon)
+
+### OCR извлекает
+- vendor · receipt_date · doc_type (RECEIPT/INVOICE/CARD_SLIP/OTHER)
+- food_amt · nonfood_amt (CACFP allowable) · non_cacfp_amt (остальное)
+- milk_whole · milk_skim · milk_pct1
+- card_last4 · card_type · payment_method
+
+### FoodCost лист структура
+| A | B | C | D | E | F | G | H (скрытая) |
+|---|---|---|---|---|---|---|---|
+| Дата MM/DD/YY | Vendor | Food $ | NonFood $ | Whole milk | Skim milk | 1% milk | receipt_id |
+
+---
+
+## Осталось сделать
+
+1. **Сортировка дат** — MM/DD/YY сортируется как текст, нужна правильная сортировка
+2. **Bank reconciliation** — BudgetSheet IMPORTRANGE → Bank_Transactions лист → сверка с FoodCost
+3. **Инструкция пользователя** — финальный документ на английском
+4. **VS Code / SaaS** — перенос в React + Supabase проект
+
+---
+
+## Bank Reconciliation план
+
+\`\`\`
+BudgetSheet (банк) → IMPORTRANGE → Bank_Transactions лист
+                                           ↓
+                              Сверка с FoodCost по:
+                              дата + vendor + сумма
+                                           ↓
+                    ✅ Match  |  ⚠️ Mismatch  |  💵 Cash/Personal (skip)
+\`\`\`
+
+- **Corporate card** → автосверка
+- **Cash** → ручное подтверждение  
+- **Personal card** → список для возмещения
+
+---
+
+## SQL для добавления колонок (если не выполнен)
+
+\`\`\`sql
+ALTER TABLE receipts
+  ADD COLUMN IF NOT EXISTS payment_method  text,
+  ADD COLUMN IF NOT EXISTS card_last4      text,
+  ADD COLUMN IF NOT EXISTS card_type       text,
+  ADD COLUMN IF NOT EXISTS non_cacfp_amt   numeric(10,2),
+  ADD COLUMN IF NOT EXISTS user_role       text,
+  ADD COLUMN IF NOT EXISTS buyer_name      text,
+  ADD COLUMN IF NOT EXISTS purchase_type   text;
+\`\`\`
+`;
+
+function openModal() {
+  document.getElementById('ctxContent').textContent = CONTEXT_MD;
+  document.getElementById('ctxModal').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('ctxModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+function copyContext() {
+  navigator.clipboard.writeText(CONTEXT_MD).then(function() {
+    var btn = document.getElementById('copyBtn');
+    btn.textContent = '✅ Copied! Now paste into Claude chat';
+    btn.style.background = '#38d9a9';
+    btn.style.color = '#0f1117';
+    setTimeout(function() {
+      btn.textContent = '📋 Copy All — Paste into Claude chat';
+      btn.style.background = '#4f8ef7';
+      btn.style.color = '#fff';
+    }, 3000);
+  });
+}
+// Close on backdrop click
+document.getElementById('ctxModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+
+</body>
+</html>
