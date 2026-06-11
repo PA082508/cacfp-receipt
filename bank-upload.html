@@ -255,7 +255,7 @@ let csvFile = null;
 const BANK_HINTS = {
   usbank:     'US Bank: Accounts → Export Transactions → Date Range → Download CSV<br><b>Format:</b> Date, Transaction, Name, Memo, Amount',
   citi:       'Citi: Account Details → Download → CSV → Select Date Range<br><b>Format:</b> Status, Date, Description, Debit, Credit, Member Name',
-  synchrony:  'Synchrony: Statements → Download Transactions → CSV Format<br><b>Format:</b> Date, Transaction, Name, Memo, Amount',
+  synchrony:  'Synchrony: Statements → Download Transactions → CSV Format<br><b>Format:</b> Transaction Date, Posting Date, Reference Number, Amount, Description',
 };
 
 // ── PIN ──────────────────────────────────────────────────────
@@ -330,6 +330,7 @@ function handleFile(f) {
 function detectBankFormat(headerLine) {
   const h = headerLine.toLowerCase();
   if (h.includes('debit') && h.includes('credit') && h.includes('description')) return 'citi';
+  if (h.includes('posting date') || h.includes('reference number')) return 'synchrony';
   if (h.includes('transaction') && h.includes('memo')) return 'usbank';
   return 'usbank';
 }
@@ -347,13 +348,19 @@ function parseCSV(text) {
   const dataLines  = hasHeader ? lines.slice(1) : lines;
   const fmt        = hasHeader ? detectBankFormat(headerLine) : 'usbank';
 
-  // Auto-select bank if Citi detected
-  if (fmt === 'citi') {
-    document.getElementById('bankSelect').value = 'citi';
-    const hint = document.getElementById('bankHint');
-    hint.innerHTML = '<b>✅ Citi format detected:</b> Status · Date · Description · Debit · Credit · Member Name';
-    hint.style.display = 'block';
+  // Auto-select bank by detected format
+  const fmtLabels = {
+    citi:      '<b>✅ Citi detected:</b> Status · Date · Description · Debit · Credit · Member Name',
+    synchrony: '<b>✅ Synchrony detected:</b> Transaction Date · Posting Date · Reference · Amount · Description',
+    usbank:    '<b>✅ US Bank format</b>'
+  };
+  if (fmt !== 'usbank' || document.getElementById('bankSelect').value === '') {
+    const sel = {citi:'citi', synchrony:'synchrony', usbank:'usbank'};
+    document.getElementById('bankSelect').value = sel[fmt] || 'usbank';
   }
+  const hint = document.getElementById('bankHint');
+  hint.innerHTML = fmtLabels[fmt] || '';
+  hint.style.display = 'block';
 
   parsedRows = [];
   const errors = [];
@@ -373,8 +380,16 @@ function parseCSV(text) {
       const credit = parseFloat(String(cols[4]).replace(/[$,\s]/g,'')) || 0;
       // Для CACFP: расходы (debit) как положительные суммы
       amount = debit > 0 ? debit : credit;
+    } else if (fmt === 'synchrony') {
+      // Synchrony: Transaction Date, Posting Date, Reference Number, Amount, Description
+      if (cols.length < 5) { errors.push('Row '+(i+1)+': not enough columns'); return; }
+      dateStr     = cols[0].trim(); // Transaction Date
+      transaction = cols[4].trim(); // Description
+      name        = cols[4].trim(); // Description
+      memo        = cols[2].trim(); // Reference Number
+      amount      = parseFloat(String(cols[3]).replace(/[$,\s]/g,''));
     } else {
-      // US Bank / Synchrony: Date, Transaction, Name, Memo, Amount
+      // US Bank: Date, Transaction, Name, Memo, Amount
       if (cols.length < 5) { errors.push('Row '+(i+1)+': not enough columns'); return; }
       dateStr     = cols[0].trim();
       transaction = cols[1].trim();
