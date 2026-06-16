@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -16,12 +16,28 @@
 :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2a2d3a;--accent:#4f8ef7;--green:#38d9a9;--danger:#ff6b6b;--text:#e8eaf0;--muted:#6b7280;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px;}
+
+/* HEADER */
 .header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:12px;}
 .header-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--green));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
-.header-title{font-size:20px;font-weight:600;}
+.header-title{font-size:20px;font-weight:600;color:#ffffff;}
 .header-sub{font-size:12px;color:var(--muted);}
-.help-btn{margin-left:auto;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:6px 14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
-.help-btn:hover{background:rgba(255,255,255,.2);border-color:#fff;color:#fff;}
+
+/* HELP BUTTON — white, visible */
+.help-btn{
+  margin-left:auto;
+  background:rgba(255,255,255,.15);
+  border:1.5px solid rgba(255,255,255,.5);
+  color:#ffffff;
+  border-radius:8px;
+  padding:7px 16px;
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  letter-spacing:.01em;
+}
+
 .steps{display:flex;padding:14px 20px 0;gap:6px;}
 .step{flex:1;height:3px;background:var(--border);border-radius:2px;transition:background .3s;}
 .step.active{background:var(--accent);}
@@ -97,16 +113,16 @@ input[type=text]::placeholder{color:var(--muted);}
 .success-icon{width:84px;height:84px;background:rgba(56,217,169,.12);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 20px;}
 .success-title{font-size:24px;font-weight:600;margin-bottom:10px;}
 .success-sub{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:32px;}
- 
-/* ── Help Panel ── */
-.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;}
+
+/* HELP PANEL */
+.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;}
 .help-overlay.open{display:block;}
 .help-sheet{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);border-radius:20px 20px 0 0;z-index:1000;max-height:85vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s ease;}
 .help-sheet.open{transform:translateY(0);}
 .help-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0;}
 .help-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px 12px;}
 .help-header-title{font-size:17px;font-weight:600;}
-.help-close{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted);padding:5px 12px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;}
+.help-close{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted);padding:6px 14px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;}
 .help-body{padding:0 20px 32px;}
 .help-section{margin-bottom:20px;}
 .help-section-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
@@ -121,7 +137,8 @@ input[type=text]::placeholder{color:var(--muted);}
 </style>
 </head>
 <body>
- 
+
+<!-- HEADER -->
 <div class="header">
   <div class="header-icon">🧾</div>
   <div>
@@ -130,13 +147,13 @@ input[type=text]::placeholder{color:var(--muted);}
   </div>
   <button class="help-btn" onclick="openHelp()">Help?</button>
 </div>
- 
+
 <div class="steps">
   <div class="step active" id="s1"></div>
   <div class="step" id="s2"></div>
 </div>
- 
-<!-- PAGE 1 -->
+
+<!-- PAGE 1: WHO ARE YOU -->
 <div class="page active" id="page1">
   <div class="page-title">Who are you?</div>
   <div class="page-sub">Select your role and name.</div>
@@ -162,11 +179,11 @@ input[type=text]::placeholder{color:var(--muted);}
     <button class="btn btn-primary" onclick="goTo(2)">Next →</button>
   </div>
 </div>
- 
-<!-- PAGE 2 -->
+
+<!-- PAGE 2: PHOTO + PAYMENT -->
 <div class="page" id="page2">
   <div class="page-title">Photograph Document</div>
-  <div class="page-sub">Receipt, invoice, product label, or any payment document. Multiple photos OK.</div>
+  <div class="page-sub">Receipt, invoice, product label, or payment document. Multiple photos OK.</div>
   <div class="field">
     <label class="label">How was this paid?</label>
     <div class="pay-grid">
@@ -219,7 +236,7 @@ input[type=text]::placeholder{color:var(--muted);}
     </div>
   </div>
   <div class="notice">
-    <b>AI will automatically identify:</b> vendor, amounts, food vs supplies vs other items, milk gallons, product labels and packaging details.
+    <b>AI will automatically identify:</b> vendor, amounts, food vs supplies vs other items, milk gallons, and product label details.
   </div>
   <div class="upload-zone" id="dropZone"
     ondragover="event.preventDefault();this.classList.add('drag')"
@@ -249,7 +266,7 @@ input[type=text]::placeholder{color:var(--muted);}
     <button class="btn btn-primary" id="submitBtn" onclick="submitReceipt()" disabled>✓ Submit</button>
   </div>
 </div>
- 
+
 <!-- SUCCESS -->
 <div class="page" id="page3">
   <div class="success-wrap">
@@ -262,10 +279,10 @@ input[type=text]::placeholder{color:var(--muted);}
     </div>
   </div>
 </div>
- 
+
 <!-- HELP OVERLAY -->
 <div class="help-overlay" id="helpOverlay" onclick="closeHelp()"></div>
- 
+
 <!-- HELP SHEET -->
 <div class="help-sheet" id="helpSheet">
   <div class="help-handle"></div>
@@ -274,7 +291,7 @@ input[type=text]::placeholder{color:var(--muted);}
     <button class="help-close" onclick="closeHelp()">✕ Close</button>
   </div>
   <div class="help-body">
- 
+
     <div class="help-section">
       <div class="help-section-title">Step 1 — Who Are You?</div>
       <div class="help-item">
@@ -286,7 +303,7 @@ input[type=text]::placeholder{color:var(--muted);}
         <div class="help-text"><b>Purchasing Staff</b> — select your name from the list.</div>
       </div>
     </div>
- 
+
     <div class="help-section">
       <div class="help-section-title">Step 2 — Payment Method</div>
       <div class="help-item">
@@ -295,19 +312,19 @@ input[type=text]::placeholder{color:var(--muted);}
       </div>
       <div class="help-item">
         <div class="help-emoji">💵</div>
-        <div class="help-text"><b>Cash</b> — enter the amount paid and select the director who approved the purchase.</div>
+        <div class="help-text"><b>Cash</b> — enter the amount and select the director who approved the purchase.</div>
       </div>
       <div class="help-item">
         <div class="help-emoji">👤</div>
         <div class="help-text"><b>Personal Card</b> — enter the amount. Reimbursement will be processed automatically.</div>
       </div>
     </div>
- 
+
     <div class="help-section">
       <div class="help-section-title">What to Photograph</div>
       <div class="help-item">
         <div class="help-emoji">🧾</div>
-        <div class="help-text"><b>Receipts & Invoices</b> — store receipt, supplier invoice, card payment slip, or PDF.</div>
+        <div class="help-text"><b>Receipts & Invoices</b> — store receipt, supplier invoice, card payment slip, or PDF document.</div>
       </div>
       <div class="help-item">
         <div class="help-emoji">🏷️</div>
@@ -321,7 +338,7 @@ input[type=text]::placeholder{color:var(--muted);}
         <b>AI automatically identifies:</b> vendor · amounts · food vs non-food · milk gallons · product details from labels and barcodes.
       </div>
     </div>
- 
+
     <div class="help-section">
       <div class="help-section-title">Tips</div>
       <div class="help-item">
@@ -341,12 +358,12 @@ input[type=text]::placeholder{color:var(--muted);}
         <div class="help-text">Name not in the list? <span class="dim">Contact your director — staff list is managed by the administrator.</span></div>
       </div>
     </div>
- 
+
     <div class="help-section">
       <div class="help-section-title">After Submission</div>
       <div class="help-item">
         <div class="help-emoji">☁️</div>
-        <div class="help-text">Files are saved to secure cloud storage and processed automatically.</div>
+        <div class="help-text">Files are saved to secure cloud storage and processed automatically by AI.</div>
       </div>
       <div class="help-item">
         <div class="help-emoji">💵</div>
@@ -357,20 +374,19 @@ input[type=text]::placeholder{color:var(--muted);}
         <div class="help-text">Personal card purchases are added to the <b>reimbursement queue</b>.</div>
       </div>
     </div>
- 
+
   </div>
 </div>
- 
+
 <script>
 const SUPABASE_URL = 'https://rkabxzqcikojcphwrkty.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrYWJ4enFjaWtvamNwaHdya3R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NjIwNjMsImV4cCI6MjA5NTIzODA2M30.AtizV_nwkpB4bzZKLp6oE8wnd3RmrhUNjJWBnp7HGVw';
 const BUCKET = 'receipts';
- 
+
 let cfg = { centers:[], staff:[] };
 let state = { role:'', name:'', center:'', payment:'', files:[], cashAmount:'', cashApprovedBy:'', reimburseTo:'', reimburseAmount:'' };
 let currentPage = 1;
- 
-// ── Help panel ──
+
 function openHelp() {
   document.getElementById('helpOverlay').classList.add('open');
   document.getElementById('helpSheet').classList.add('open');
@@ -381,7 +397,7 @@ function closeHelp() {
   document.getElementById('helpSheet').classList.remove('open');
   document.body.style.overflow = '';
 }
- 
+
 async function init() {
   try {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/app_settings?select=id,value`,
@@ -390,7 +406,7 @@ async function init() {
     rows.forEach(row => { cfg[row.id] = row.value; });
   } catch(e) { console.warn('Settings:', e.message); }
 }
- 
+
 function goTo(n) {
   if (n > currentPage && !validate(currentPage)) return;
   document.getElementById('page'+currentPage).classList.remove('active');
@@ -403,7 +419,7 @@ function goTo(n) {
   if (n===2) buildSummary();
   window.scrollTo(0,0);
 }
- 
+
 function validate(n) {
   if (n===1) {
     if (!state.role) { alert('Please select your role.'); return false; }
@@ -412,7 +428,7 @@ function validate(n) {
   }
   return true;
 }
- 
+
 function selectRole(role) {
   state.role = role; state.name = ''; state.center = '';
   document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('selected'));
@@ -443,7 +459,7 @@ function selectRole(role) {
     nameField.style.display = 'block';
   }
 }
- 
+
 function buildDirectorNames(centerId) {
   const nameField = document.getElementById('name-field');
   const nameSelect = document.getElementById('name-select');
@@ -455,11 +471,11 @@ function buildDirectorNames(centerId) {
   nameSelect.onchange = function() { state.name=this.value; };
   nameField.style.display = 'block';
 }
- 
+
 function selectPayment(type) {
   state.payment = type;
   state.cashAmount=''; state.cashApprovedBy=''; state.reimburseTo=''; state.reimburseAmount='';
-  document.querySelectorAll('.pay-card').forEach(c => c.classList.remove('selected','corporate','cash','personal'));
+  document.querySelectorAll('.pay-card').forEach(c=>c.classList.remove('selected','corporate','cash','personal'));
   const el = document.getElementById('pay-'+type);
   if (el) { el.classList.add('selected'); el.classList.add(type); }
   document.getElementById('extra-cash').classList.toggle('visible', type==='cash');
@@ -476,7 +492,7 @@ function selectPayment(type) {
   updateSummaryPayment();
   checkSubmitReady();
 }
- 
+
 function updateSummaryPayment() {
   if (!state.payment) return;
   const labels = {corporate:'💳 Corporate Card', cash:'💵 Cash', personal:'👤 Personal Card'};
@@ -499,7 +515,7 @@ function updateSummaryPayment() {
     extraRow.style.display = 'none';
   }
 }
- 
+
 function buildSummary() {
   const today = new Date();
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -515,18 +531,18 @@ function buildSummary() {
   }
   updateSummaryPayment();
 }
- 
+
 function handleFiles(files) {
   for (const f of files) state.files.push(f);
   renderThumbs();
 }
- 
+
 function handleDrop(e) {
   e.preventDefault();
   document.getElementById('dropZone').classList.remove('drag');
   handleFiles(e.dataTransfer.files);
 }
- 
+
 function renderThumbs() {
   const c = document.getElementById('thumbs');
   c.innerHTML = '';
@@ -546,11 +562,11 @@ function renderThumbs() {
   document.getElementById('sum-photos').textContent = state.files.length+' file'+(state.files.length!==1?'s':'');
   checkSubmitReady();
 }
- 
+
 function checkSubmitReady() {
   document.getElementById('submitBtn').disabled = !(state.files.length > 0 && !!state.payment);
 }
- 
+
 async function submitReceipt() {
   const btn = document.getElementById('submitBtn');
   const err = document.getElementById('submitError');
@@ -608,7 +624,7 @@ async function submitReceipt() {
     btn.disabled=false; btn.textContent='✓ Submit';
   }
 }
- 
+
 function showSuccess() {
   for (let i=1;i<=2;i++) document.getElementById('s'+i).className='step done';
   document.getElementById('page2').classList.remove('active');
@@ -619,7 +635,7 @@ function showSuccess() {
   document.getElementById('successMsg').textContent =
     `Document submitted by ${state.name}.\n${state.files.length} photo${state.files.length!==1?'s':''} saved.${extra}\nAI will process automatically.`;
 }
- 
+
 function resetForm() {
   state = {role:'',name:'',center:'',payment:'',files:[],cashAmount:'',cashApprovedBy:'',reimburseTo:'',reimburseAmount:''};
   for (let i=1;i<=3;i++) { const p=document.getElementById('page'+i); if(p) p.classList.remove('active'); }
@@ -634,9 +650,8 @@ function resetForm() {
   for (let i=1;i<=2;i++) { const s=document.getElementById('s'+i); if(s) s.className='step'; }
   currentPage=0; goTo(1);
 }
- 
+
 init();
 </script>
 </body>
 </html>
- 
