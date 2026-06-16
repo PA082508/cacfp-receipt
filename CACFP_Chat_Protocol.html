@@ -2,424 +2,640 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CACFP Chat Protocol</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CACFP">
+<meta name="theme-color" content="#0f1117">
+<link rel="apple-touch-icon" href="https://rkabxzqcikojcphwrkty.supabase.co/storage/v1/object/public/assets/PA-Logo-144x144.png">
+<link rel="icon" type="image/png" href="https://rkabxzqcikojcphwrkty.supabase.co/storage/v1/object/public/assets/PA-Logo-144x144.png">
+<title>CACFP Receipt Upload</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400&display=swap');
-  :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2a2d3a;--accent:#4f8ef7;--green:#38d9a9;--amber:#f5a623;--danger:#ff6b6b;--text:#e8eaf0;--muted:#6b7280;}
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);padding:24px 20px 60px;max-width:720px;margin:0 auto;}
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2a2d3a;--accent:#4f8ef7;--green:#38d9a9;--danger:#ff6b6b;--text:#e8eaf0;--muted:#6b7280;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px;}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:12px;}
+.header-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--green));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.header-title{font-size:16px;font-weight:600;}
+.header-sub{font-size:12px;color:var(--muted);}
+.help-btn{margin-left:auto;background:transparent;border:1.5px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;}
+.help-btn:hover{border-color:var(--accent);color:var(--accent);}
+.steps{display:flex;padding:14px 20px 0;gap:6px;}
+.step{flex:1;height:3px;background:var(--border);border-radius:2px;transition:background .3s;}
+.step.active{background:var(--accent);}
+.step.done{background:var(--green);}
+.page{display:none;padding:20px;}
+.page.active{display:block;}
+.page-title{font-size:22px;font-weight:600;margin-bottom:6px;}
+.page-sub{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.5;}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.role-card{background:var(--surface2);border:2px solid var(--border);border-radius:14px;padding:20px 14px;cursor:pointer;transition:all .15s;text-align:center;}
+.role-card:hover{border-color:var(--accent);}
+.role-card.selected{border-color:var(--accent);background:rgba(79,142,247,.1);}
+.role-card .role-icon{font-size:32px;margin-bottom:8px;}
+.role-card .role-name{font-size:14px;font-weight:600;}
+.field{margin-bottom:16px;}
+.label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+select,input[type=text]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;padding:13px 14px;outline:none;transition:border-color .2s;appearance:none;}
+select:focus,input[type=text]:focus{border-color:var(--accent);}
+select option{background:#1a1d27;}
+input[type=text]::placeholder{color:var(--muted);}
+.upload-zone{border:2px dashed var(--border);border-radius:16px;padding:36px 20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;margin-bottom:16px;}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(79,142,247,.04);}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:100px;}
+.upload-icon{font-size:48px;margin-bottom:12px;}
+.upload-label{font-size:16px;font-weight:600;margin-bottom:6px;}
+.upload-hint{font-size:13px;color:var(--muted);}
+.thumbs{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+.thumb-wrap{position:relative;display:inline-block;}
+.thumb{width:80px;height:80px;border-radius:10px;object-fit:cover;border:2px solid var(--border);}
+.thumb-pdf{width:80px;height:80px;border-radius:10px;background:var(--surface2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:28px;}
+.thumb-del{position:absolute;top:-7px;right:-7px;width:22px;height:22px;background:var(--danger);border-radius:50%;border:none;cursor:pointer;color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center;}
+.pay-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;}
+.pay-card{background:var(--surface2);border:2px solid var(--border);border-radius:12px;padding:12px 8px;cursor:pointer;transition:all .15s;text-align:center;}
+.pay-card:hover{border-color:var(--accent);}
+.pay-card.selected.corporate{border-color:var(--accent);background:rgba(79,142,247,.1);}
+.pay-card.selected.cash{border-color:#f7c94f;background:rgba(247,201,79,.1);}
+.pay-card.selected.personal{border-color:var(--danger);background:rgba(255,107,107,.08);}
+.pay-icon{font-size:24px;margin-bottom:4px;}
+.pay-name{font-size:12px;font-weight:600;}
+.pay-sub{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.3;}
+.pay-extra{margin-top:0;margin-bottom:16px;display:none;}
+.pay-extra.visible{display:block;}
+.pay-extra-inner{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;}
+.pay-extra-inner .label{margin-top:0;}
+.cash-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(247,201,79,.12);border:1px solid rgba(247,201,79,.3);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:#f7c94f;margin-bottom:12px;}
+.personal-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.25);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--danger);margin-bottom:12px;}
+.notice{background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:16px;}
+.notice b{color:var(--text);}
+.summary{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:20px;}
+.summary-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:14px;}
+.summary-row:last-child{border-bottom:none;}
+.summary-key{color:var(--muted);}
+.summary-val{font-weight:500;}
+.badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:600;text-transform:uppercase;}
+.badge-director{background:rgba(79,142,247,.15);color:var(--accent);}
+.badge-purchasing{background:rgba(56,217,169,.12);color:var(--green);}
+.badge-corporate{background:rgba(79,142,247,.15);color:var(--accent);}
+.badge-cash{background:rgba(247,201,79,.15);color:#f7c94f;}
+.badge-personal{background:rgba(255,107,107,.12);color:var(--danger);}
+.btn{width:100%;padding:15px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;cursor:pointer;border:none;transition:all .15s;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:#3a7de8;}
+.btn-primary:disabled{background:var(--border);color:var(--muted);cursor:not-allowed;}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--muted);}
+.btn-ghost:hover{border-color:var(--text);color:var(--text);}
+.btn-row{display:flex;gap:10px;margin-top:20px;}
+.btn-row .btn{flex:1;}
+.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin:14px 0;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:2px;width:0%;transition:width .3s;}
+.error-box{background:rgba(255,107,107,.1);border:1px solid var(--danger);border-radius:10px;padding:12px;font-size:13px;color:var(--danger);margin-bottom:14px;display:none;}
+.error-box.visible{display:block;}
+.success-wrap{text-align:center;padding:40px 20px;}
+.success-icon{width:84px;height:84px;background:rgba(56,217,169,.12);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 20px;}
+.success-title{font-size:24px;font-weight:600;margin-bottom:10px;}
+.success-sub{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:32px;}
 
-  .header{text-align:center;padding:32px 0 24px;}
-  .header-icon{font-size:48px;margin-bottom:12px;}
-  .header-title{font-size:28px;font-weight:600;margin-bottom:6px;}
-  .header-sub{font-size:14px;color:var(--muted);}
-
-  .section{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:16px;overflow:hidden;}
-  .section-header{padding:14px 18px;display:flex;align-items:center;gap:10px;}
-  .section-title{font-size:15px;font-weight:600;}
-  .section-icon{font-size:18px;}
-  .section-body{padding:0 18px 16px;}
-
-  .step{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
-  .step:last-child{border-bottom:none;}
-  .step-num{width:28px;height:28px;min-width:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;}
-  .step-num.green{background:rgba(56,217,169,.15);color:var(--green);}
-  .step-num.red{background:rgba(255,107,107,.15);color:var(--danger);}
-  .step-num.blue{background:rgba(79,142,247,.15);color:var(--accent);}
-  .step-text{font-size:13px;line-height:1.6;color:var(--text);}
-  .step-text b{color:var(--green);}
-  .step-text .muted{color:var(--muted);}
-
-  code{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);}
-
-  pre{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);white-space:pre-wrap;margin:8px 0;line-height:1.6;}
-
-  .table{width:100%;border-collapse:collapse;margin:8px 0;}
-  .table th{background:var(--surface2);color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);}
-  .table td{padding:8px 12px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.5;}
-  .table tr:last-child td{border-bottom:none;}
-  .table tr:nth-child(even) td{background:rgba(255,255,255,.02);}
-
-  .badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600;}
-  .badge-green{background:rgba(56,217,169,.12);color:var(--green);}
-  .badge-blue{background:rgba(79,142,247,.12);color:var(--accent);}
-  .badge-amber{background:rgba(245,166,35,.12);color:var(--amber);}
-
-  .agent-card{border-radius:10px;padding:12px 14px;margin:8px 0;}
-  .agent-architect{background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);}
-  .agent-developer{background:rgba(56,217,169,.08);border:1px solid rgba(56,217,169,.2);}
-  .agent-controller{background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);}
-  .agent-title{font-size:13px;font-weight:600;margin-bottom:4px;}
-  .agent-desc{font-size:12px;color:var(--muted);line-height:1.5;}
-
-  .links{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0;}
-  .link-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-decoration:none;transition:border-color .15s;}
-  .link-card:hover{border-color:var(--accent);}
-  .link-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px;}
-  .link-url{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
-
-  .divider{height:1px;background:var(--border);margin:8px 0;}
+/* ── Help Panel ── */
+.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;}
+.help-overlay.open{display:block;}
+.help-sheet{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);border-radius:20px 20px 0 0;z-index:1000;max-height:85vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s ease;}
+.help-sheet.open{transform:translateY(0);}
+.help-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0;}
+.help-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px 12px;}
+.help-header-title{font-size:17px;font-weight:600;}
+.help-close{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted);padding:5px 12px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;}
+.help-body{padding:0 20px 32px;}
+.help-section{margin-bottom:20px;}
+.help-section-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.help-item{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.help-item:last-child{border-bottom:none;}
+.help-emoji{font-size:18px;flex-shrink:0;width:24px;text-align:center;margin-top:1px;}
+.help-text{font-size:13px;line-height:1.6;color:var(--text);}
+.help-text b{color:var(--green);}
+.help-text .dim{color:var(--muted);}
+.help-tip{background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--muted);line-height:1.6;margin-top:8px;}
+.help-tip b{color:var(--text);}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="header-icon">📋</div>
-  <div class="header-title">CACFP Chat Protocol</div>
-  <div class="header-sub">Play Academy Child Care · Northeast Ohio · 2026</div>
+  <div class="header-icon">🧾</div>
+  <div>
+    <div class="header-title">Receipt Upload</div>
+    <div class="header-sub">CACFP Food Program</div>
+  </div>
+  <button class="help-btn" onclick="openHelp()">Help?</button>
 </div>
 
-<!-- START -->
-<div class="section">
-  <div class="section-header" style="background:rgba(56,217,169,.08);border-bottom:1px solid var(--border)">
-    <span class="section-icon">🟢</span>
-    <span class="section-title">НАЧАЛО ЧАТА</span>
-  </div>
-  <div class="section-body" style="padding-top:14px">
+<div class="steps">
+  <div class="step active" id="s1"></div>
+  <div class="step" id="s2"></div>
+</div>
 
-    <div class="step">
-      <div class="step-num green">1</div>
-      <div class="step-text">
-        <b>Первое сообщение:</b><br>
-        <pre>Продолжаем CACFP. [Агент: DEVELOPER / ARCHITECT / CONTROLLER]
-Задача: [одно предложение что нужно сделать]</pre>
+<!-- PAGE 1 -->
+<div class="page active" id="page1">
+  <div class="page-title">Who are you?</div>
+  <div class="page-sub">Select your role and name.</div>
+  <div class="role-grid">
+    <div class="role-card" id="role-director" onclick="selectRole('director')">
+      <div class="role-icon">🏫</div>
+      <div class="role-name">Director</div>
+    </div>
+    <div class="role-card" id="role-purchasing" onclick="selectRole('purchasing')">
+      <div class="role-icon">🛒</div>
+      <div class="role-name">Purchasing Staff</div>
+    </div>
+  </div>
+  <div class="field" id="center-field" style="display:none">
+    <label class="label">Center</label>
+    <select id="center-select"></select>
+  </div>
+  <div class="field" id="name-field" style="display:none">
+    <label class="label">Your Name</label>
+    <select id="name-select"></select>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="goTo(2)">Next →</button>
+  </div>
+</div>
+
+<!-- PAGE 2 -->
+<div class="page" id="page2">
+  <div class="page-title">Photograph Document</div>
+  <div class="page-sub">Receipt, invoice, product label, or any payment document. Multiple photos OK.</div>
+  <div class="field">
+    <label class="label">How was this paid?</label>
+    <div class="pay-grid">
+      <div class="pay-card" id="pay-corporate" onclick="selectPayment('corporate')">
+        <div class="pay-icon">💳</div>
+        <div class="pay-name">Corporate Card</div>
+        <div class="pay-sub">Auto-verified with bank</div>
+      </div>
+      <div class="pay-card" id="pay-cash" onclick="selectPayment('cash')">
+        <div class="pay-icon">💵</div>
+        <div class="pay-name">Cash</div>
+        <div class="pay-sub">Manual approval needed</div>
+      </div>
+      <div class="pay-card" id="pay-personal" onclick="selectPayment('personal')">
+        <div class="pay-icon">👤</div>
+        <div class="pay-name">Personal Card</div>
+        <div class="pay-sub">Reimbursement needed</div>
+      </div>
+    </div>
+    <div class="pay-extra" id="extra-cash">
+      <div class="pay-extra-inner">
+        <div class="cash-badge">💵 Cash — manual approval required</div>
+        <div class="field" style="margin-bottom:12px">
+          <label class="label">Amount Paid (cash)</label>
+          <input type="text" id="cash-amount" placeholder="e.g. 47.85" inputmode="decimal" oninput="state.cashAmount=this.value;updateSummaryPayment()">
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label class="label">Approved by (Director)</label>
+          <select id="cash-approved-by" onchange="state.cashApprovedBy=this.value;updateSummaryPayment()">
+            <option value="">-- Select approving director --</option>
+            <option value="Sonia Texidor">Sonia Texidor — Ridge</option>
+            <option value="Theresa Rolf">Theresa Rolf — Alpha</option>
+            <option value="Carmen Santiago">Carmen Santiago — Pearl</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="pay-extra" id="extra-personal">
+      <div class="pay-extra-inner">
+        <div class="personal-badge">👤 Personal Card — reimbursement will be processed</div>
+        <div class="field" style="margin-bottom:12px">
+          <label class="label">Reimbursement to</label>
+          <input type="text" id="personal-reimburse-to" placeholder="Name on card / account" oninput="state.reimburseTo=this.value;updateSummaryPayment()">
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label class="label">Amount to Reimburse</label>
+          <input type="text" id="personal-amount" placeholder="e.g. 123.50" inputmode="decimal" oninput="state.reimburseAmount=this.value;updateSummaryPayment()">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="notice">
+    <b>AI will automatically identify:</b> vendor, amounts, food vs supplies vs other items, milk gallons, product labels and packaging details.
+  </div>
+  <div class="upload-zone" id="dropZone"
+    ondragover="event.preventDefault();this.classList.add('drag')"
+    ondragleave="this.classList.remove('drag')"
+    ondrop="handleDrop(event)">
+    <input type="file" id="fileInput" accept="image/*,.pdf" multiple capture="environment" onchange="handleFiles(this.files)">
+    <div class="upload-icon">📷</div>
+    <div class="upload-label">Tap to take photo</div>
+    <div class="upload-hint">Receipt · Invoice · Product label · Card slip · JPG, PNG, PDF</div>
+  </div>
+  <div class="thumbs" id="thumbs"></div>
+  <div class="summary" id="summary" style="display:none">
+    <div class="summary-row"><span class="summary-key">Name</span><span class="summary-val" id="sum-name"></span></div>
+    <div class="summary-row"><span class="summary-key">Role</span><span class="summary-val" id="sum-role"></span></div>
+    <div class="summary-row" id="sum-center-row" style="display:none"><span class="summary-key">Center</span><span class="summary-val" id="sum-center"></span></div>
+    <div class="summary-row" id="sum-payment-row" style="display:none"><span class="summary-key">Payment</span><span class="summary-val" id="sum-payment"></span></div>
+    <div class="summary-row" id="sum-extra-row" style="display:none"><span class="summary-key" id="sum-extra-key"></span><span class="summary-val" id="sum-extra-val"></span></div>
+    <div class="summary-row"><span class="summary-key">Date</span><span class="summary-val" id="sum-date"></span></div>
+    <div class="summary-row"><span class="summary-key">Photos</span><span class="summary-val" id="sum-photos"></span></div>
+  </div>
+  <div class="error-box" id="submitError"></div>
+  <div class="progress-bar" id="progressBar" style="display:none">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-ghost" onclick="goTo(1)">← Back</button>
+    <button class="btn btn-primary" id="submitBtn" onclick="submitReceipt()" disabled>✓ Submit</button>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="page" id="page3">
+  <div class="success-wrap">
+    <div class="success-icon">✓</div>
+    <div class="success-title">Submitted!</div>
+    <div class="success-sub" id="successMsg"></div>
+    <div style="display:flex;gap:12px">
+      <button class="btn btn-ghost" onclick="window.location.reload()" style="flex:1">✕ Done</button>
+      <button class="btn btn-primary" onclick="resetForm()" style="flex:2">+ Submit Another</button>
+    </div>
+  </div>
+</div>
+
+<!-- HELP OVERLAY -->
+<div class="help-overlay" id="helpOverlay" onclick="closeHelp()"></div>
+
+<!-- HELP SHEET -->
+<div class="help-sheet" id="helpSheet">
+  <div class="help-handle"></div>
+  <div class="help-header">
+    <span class="help-header-title">How to Use This App</span>
+    <button class="help-close" onclick="closeHelp()">✕ Close</button>
+  </div>
+  <div class="help-body">
+
+    <div class="help-section">
+      <div class="help-section-title">Step 1 — Who Are You?</div>
+      <div class="help-item">
+        <div class="help-emoji">🏫</div>
+        <div class="help-text"><b>Director</b> — select your center, then select your name from the list.</div>
+      </div>
+      <div class="help-item">
+        <div class="help-emoji">🛒</div>
+        <div class="help-text"><b>Purchasing Staff</b> — select your name from the list.</div>
       </div>
     </div>
 
-    <div class="step">
-      <div class="step-num green">2</div>
-      <div class="step-text">
-        <b>Прикрепите</b> файл <code>CACFP_Context.md</code> если новый чат.<br>
-        <span class="muted">Или просто напишите "читай память" — контекст сохранён.</span>
+    <div class="help-section">
+      <div class="help-section-title">Step 2 — Payment Method</div>
+      <div class="help-item">
+        <div class="help-emoji">💳</div>
+        <div class="help-text"><b>Corporate Card</b> — Play Academy card. Automatically matched with bank statement. No extra fields needed.</div>
+      </div>
+      <div class="help-item">
+        <div class="help-emoji">💵</div>
+        <div class="help-text"><b>Cash</b> — enter the amount paid and select the director who approved the purchase.</div>
+      </div>
+      <div class="help-item">
+        <div class="help-emoji">👤</div>
+        <div class="help-text"><b>Personal Card</b> — enter the amount. Reimbursement will be processed automatically.</div>
       </div>
     </div>
 
-    <div class="step">
-      <div class="step-num green">3</div>
-      <div class="step-text">
-        <b>Укажите агента</b> — Claude сразу возьмёт правильную роль.<br>
-        <span class="muted">Промпты агентов в Notebook → лист Agents.</span>
+    <div class="help-section">
+      <div class="help-section-title">What to Photograph</div>
+      <div class="help-item">
+        <div class="help-emoji">🧾</div>
+        <div class="help-text"><b>Receipts & Invoices</b> — store receipt, supplier invoice, card payment slip, or PDF.</div>
+      </div>
+      <div class="help-item">
+        <div class="help-emoji">🏷️</div>
+        <div class="help-text"><b>Product Labels & Packaging</b> — nutrition label, price tag, UPC barcode, case label with item number and pack size, shipping label. Used for inventory tracking and food cost records.</div>
+      </div>
+      <div class="help-item">
+        <div class="help-emoji">📄</div>
+        <div class="help-text"><b>Multiple photos OK</b> — for long receipts, multi-page invoices, or several sides of a package.</div>
+      </div>
+      <div class="help-tip">
+        <b>AI automatically identifies:</b> vendor · amounts · food vs non-food · milk gallons · product details from labels and barcodes.
+      </div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">Tips</div>
+      <div class="help-item">
+        <div class="help-emoji">✅</div>
+        <div class="help-text">Make sure the document is <b>fully visible and in focus</b> before submitting.</div>
+      </div>
+      <div class="help-item">
+        <div class="help-emoji">🔄</div>
+        <div class="help-text">Wrong file? Tap <b>×</b> on the thumbnail to remove it.</div>
+      </div>
+      <div class="help-item">
+        <div class="help-emoji">⬅️</div>
+        <div class="help-text">Wrong name? Tap <b>← Back</b> to go back and correct it.</div>
+      </div>
+      <div class="help-item">
+        <div class="help-emoji">👤</div>
+        <div class="help-text">Name not in the list? <span class="dim">Contact your director — staff list is managed by the administrator.</span></div>
+      </div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">After Submission</div>
+      <div class="help-item">
+        <div class="help-emoji">☁️</div>
+        <div class="help-text">Files are saved to secure cloud storage and processed automatically.</div>
+      </div>
+      <div class="help-item">
+        <div class="help-emoji">💵</div>
+        <div class="help-text">Cash purchases await <b>manual director approval</b>.</div>
+      </div>
+      <div class="help-item">
+        <div class="help-emoji">👤</div>
+        <div class="help-text">Personal card purchases are added to the <b>reimbursement queue</b>.</div>
       </div>
     </div>
 
   </div>
 </div>
 
-<!-- END -->
-<div class="section">
-  <div class="section-header" style="background:rgba(255,107,107,.08);border-bottom:1px solid var(--border)">
-    <span class="section-icon">🔴</span>
-    <span class="section-title">КОНЕЦ ЧАТА</span>
-  </div>
-  <div class="section-body" style="padding-top:14px">
-
-    <div class="step">
-      <div class="step-num red">1</div>
-      <div class="step-text">
-        <b>Запросите ревизию:</b><br>
-        <pre>Завершаем чат. Дай артефакт для Notebook.</pre>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-num red">2</div>
-      <div class="step-text">
-        <b>Получите</b> <code>runRevision_ДДММГГГГ.gs</code><br>
-        Вставьте в конец скрипта Notebook → запустите функцию.
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-num red">3</div>
-      <div class="step-text">
-        <b>Если были архитектурные изменения:</b><br>
-        <pre>Обнови Administrator's Notebook</pre>
-        Получите обновлённый <code>.docx</code>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- AGENTS -->
-<div class="section">
-  <div class="section-header" style="background:rgba(79,142,247,.08);border-bottom:1px solid var(--border)">
-    <span class="section-icon">🤖</span>
-    <span class="section-title">ТРИ АГЕНТА</span>
-  </div>
-  <div class="section-body" style="padding-top:14px">
-
-    <div class="agent-card agent-architect">
-      <div class="agent-title">🏛️ ARCHITECT — Задача + Проектирование</div>
-      <div class="agent-desc">Проектирует архитектуру · ставит задачи · следит за принципами · НЕ пишет код<br>
-      <b style="color:var(--accent)">Выход →</b> заполняет Handoff: TASK · DESIGN · CONSTRAINTS · DONE_WHEN</div>
-    </div>
-
-    <div class="agent-card agent-developer">
-      <div class="agent-title">⚙️ DEVELOPER — Логика + Реализация</div>
-      <div class="agent-desc">Пишет код · Apps Script · HTML · SQL · следует принципам<br>
-      <b style="color:var(--green)">Выход →</b> заполняет Handoff: RESULT · FILES_CHANGED · TESTED · KNOWN_ISSUES</div>
-    </div>
-
-    <div class="agent-card agent-controller">
-      <div class="agent-title">🎯 CONTROLLER — Контроль + Notebook</div>
-      <div class="agent-desc">Проверяет результат · обновляет Notebook · архивирует Handoff<br>
-      <b style="color:var(--amber)">Выход →</b> runRevision_() · Handoff_History · готовит следующую сессию</div>
-    </div>
-
-    <div class="divider"></div>
-    <p style="font-size:12px;color:var(--muted);margin-top:8px">
-      Порядок: <b style="color:var(--accent)">ARCHITECT</b> →
-      <b style="color:var(--green)">DEVELOPER</b> →
-      <b style="color:var(--amber)">CONTROLLER</b> → повтор
-    </p>
-
-  </div>
-</div>
-
-<!-- ARTIFACTS -->
-<div class="section">
-  <div class="section-header" style="background:rgba(79,142,247,.08);border-bottom:1px solid var(--border)">
-    <span class="section-icon">📦</span>
-    <span class="section-title">ЧТО ДАЁТ CLAUDE</span>
-  </div>
-  <div class="section-body" style="padding-top:10px">
-    <table class="table">
-      <tr><th>Ситуация</th><th>Артефакт</th></tr>
-      <tr><td>Код Apps Script</td><td><code>.gs</code> файл</td></tr>
-      <tr><td>Код Receipt App</td><td><code>index.html</code> или <code>settings.html</code></td></tr>
-      <tr><td>SQL Supabase</td><td>Текст в чате → SQL Editor</td></tr>
-      <tr><td>Документация</td><td><code>.md</code> или <code>.docx</code></td></tr>
-      <tr><td>Ревизия Notebook</td><td><code>runRevision_().gs</code></td></tr>
-      <tr><td>Handoff следующей сессии</td><td><code>.gs</code> с заполненным Handoff</td></tr>
-    </table>
-  </div>
-</div>
-
-<!-- LINKS -->
-<div class="section">
-  <div class="section-header" style="border-bottom:1px solid var(--border)">
-    <span class="section-icon">🔗</span>
-    <span class="section-title">БЫСТРЫЕ ССЫЛКИ</span>
-  </div>
-  <div class="section-body" style="padding-top:14px">
-    <div class="links">
-      <a class="link-card" href="https://pa082508.github.io/cacfp-receipt" target="_blank">
-        <div class="link-name">📱 Receipt Upload App</div>
-        <div class="link-url">pa082508.github.io/cacfp-receipt</div>
-      </a>
-      <a class="link-card" href="https://pa082508.github.io/cacfp-receipt/settings.html" target="_blank">
-        <div class="link-name">⚙️ Admin Settings</div>
-        <div class="link-url">…/settings.html · PIN: 44092</div>
-      </a>
-      <a class="link-card" href="https://supabase.com/dashboard/project/rkabxzqcikojcphwrkty" target="_blank">
-        <div class="link-name">🗄️ Supabase Dashboard</div>
-        <div class="link-url">childcare-core · AWS us-east-2</div>
-      </a>
-      <a class="link-card" href="https://github.com/PA082508/cacfp-receipt" target="_blank">
-        <div class="link-name">💻 GitHub Repo</div>
-        <div class="link-url">PA082508/cacfp-receipt</div>
-      </a>
-      <a class="link-card" href="https://console.anthropic.com" target="_blank">
-        <div class="link-name">🤖 Anthropic Console</div>
-        <div class="link-url">OCR API · $5 credits</div>
-      </a>
-      <a class="link-card" href="https://sites.google.com/view/cacfpreceiptentry" target="_blank">
-        <div class="link-name">🌐 Google Sites</div>
-        <div class="link-url">cacfpreceiptentry</div>
-      </a>
-    </div>
-  </div>
-    <button onclick="openModal()" style="width:100%;margin-top:12px;background:rgba(56,217,169,.12);border:1px solid rgba(56,217,169,.3);border-radius:10px;color:#38d9a9;padding:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
-      📋 Open CACFP_Context.md — Copy for new chat
-    </button>
-</div>
-</div>
-
-<!-- WORKFLOW -->
-<div class="section">
-  <div class="section-header" style="border-bottom:1px solid var(--border)">
-    <span class="section-icon">🔄</span>
-    <span class="section-title">WORKFLOW МЕЖДУ ЧАТАМИ</span>
-  </div>
-  <div class="section-body" style="padding-top:14px">
-    <pre>Чат N заканчивается:
-  → Claude даёт runRevision_ДДММГГГГ.gs
-  → Вставить в конец скрипта Notebook
-  → Запустить функцию → Notebook обновлён
-  → Handoff заполнен для следующей сессии
-
-Чат N+1 начинается:
-  → "Продолжаем CACFP. Агент: ... Задача: ..."
-  → Claude читает память → контекст восстановлен
-  → Продолжаем без повторений</pre>
-  </div>
-</div>
-
-<p style="text-align:center;color:var(--muted);font-size:12px;margin-top:24px">
-  Play Academy Child Care · CACFP System · v1.0 · June 2026
-</p>
-
-
-<!-- CONTEXT MODAL -->
-<div id="ctxModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;overflow-y:auto;padding:20px;">
-  <div style="background:#1a1d27;border:1px solid #2a2d3a;border-radius:14px;max-width:720px;margin:0 auto;padding:24px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <span style="font-size:16px;font-weight:600;color:#e8eaf0;">📋 CACFP_Context.md</span>
-      <button onclick="closeModal()" style="background:rgba(255,107,107,.15);border:1px solid rgba(255,107,107,.3);border-radius:8px;color:#ff6b6b;padding:6px 14px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">✕ Close</button>
-    </div>
-    <div style="background:#0f1117;border:1px solid #2a2d3a;border-radius:10px;padding:16px;margin-bottom:14px;max-height:50vh;overflow-y:auto;">
-      <pre id="ctxContent" style="font-family:'DM Mono',monospace;font-size:11px;color:#38d9a9;white-space:pre-wrap;line-height:1.6;margin:0;"></pre>
-    </div>
-    <button onclick="copyContext()" id="copyBtn" style="width:100%;background:#4f8ef7;border:none;border-radius:10px;color:#fff;padding:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;">📋 Copy All — Paste into Claude chat</button>
-  </div>
-</div>
-
-<!-- CONTEXT BUTTON — add before closing </div> of links section -->
 <script>
-const CONTEXT_MD = `# CACFP System — Context for New Chat
+const SUPABASE_URL = 'https://rkabxzqcikojcphwrkty.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrYWJ4enFjaWtvamNwaHdya3R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NjIwNjMsImV4cCI6MjA5NTIzODA2M30.AtizV_nwkpB4bzZKLp6oE8wnd3RmrhUNjJWBnp7HGVw';
+const BUCKET = 'receipts';
 
-## Продолжаем разработку CACFP системы
+let cfg = { centers:[], staff:[] };
+let state = { role:'', name:'', center:'', payment:'', files:[], cashAmount:'', cashApprovedBy:'', reimburseTo:'', reimburseAmount:'' };
+let currentPage = 1;
 
----
-
-## Инфраструктура
-
-| | |
-|---|---|
-| **Google Sheets** | Reports_CACFP |
-| **Apps Script** | CACFP_Complete.gs (~1850 строк) |
-| **GitHub** | pa082508.github.io/cacfp-receipt |
-| **Supabase** | rkabxzqcikojcphwrkty.supabase.co |
-| **Supabase ANON** | eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrYWJ4enFjaWtvamNwaHdya3R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2NjIwNjMsImV4cCI6MjA5NTIzODA2M30.AtizV_nwkpB4bzZKLp6oE8wnd3RmrhUNjJWBnp7HGVw |
-| **Anthropic API** | В Apps Script Properties → ANTHROPIC_KEY · $5 credits · claude-sonnet-4-6 |
-
----
-
-## Три центра
-
-| Центр | Город | Директор |
-|---|---|---|
-| Ridge | Wickliffe | Sonia Texidor |
-| Alpha | Highland Heights | Theresa Rolf |
-| Pearl | Parma Heights | Carmen Santiago |
-
-**Purchasing Staff (office):** Tatiana · Larysa · Philippe · Ross
-
----
-
-## Что сделано ✅
-
-### Apps Script (CACFP_Complete.gs)
-- **🥛 FoodCost меню:** Sort by Date · Save Final PDF · Create New Month · Create Purchasing Form · Create Templates · 🔍 Process Pending Receipts
-- **📋 Worksheet меню:** Refresh All Formulas · Add Row Here · Remove Row Here · Create New Month
-- **📦 Inventory меню:** Refresh Formulas · Add Item Row · Remove Item Row · Create New Year
-- **OCR:** Process Pending Receipts → Claude Vision → auto-import в FoodCost лист
-- **Dedup:** receipt_id в скрытой колонке H
-
-### Receipt Upload App
-- **URL:** https://pa082508.github.io/cacfp-receipt
-- **2 шага:** Кто я (роль+центр+имя) → Фото + способ оплаты
-- **Оплата:** 💳 Corporate Card · 💵 Cash · 👤 Personal Card
-- **Settings:** https://pa082508.github.io/cacfp-receipt/settings.html · PIN: 44092
-
-### Supabase
-- **Таблица receipts:** id · center · fiscal_month · receipt_date · vendor · file_paths[] · food_amt · nonfood_amt · non_cacfp_amt · milk_whole · milk_skim · milk_pct1 · notes · status · user_role · buyer_name · purchase_type · card_last4 · card_type · payment_method
-- **Таблица app_settings:** centers · staff · purchase_types (jsonb)
-- **Storage:** receipts (private) · assets (public)
-- **RLS:** allow_insert · allow_select · allow_update (anon)
-
-### OCR извлекает
-- vendor · receipt_date · doc_type (RECEIPT/INVOICE/CARD_SLIP/OTHER)
-- food_amt · nonfood_amt (CACFP allowable) · non_cacfp_amt (остальное)
-- milk_whole · milk_skim · milk_pct1
-- card_last4 · card_type · payment_method
-
-### FoodCost лист структура
-| A | B | C | D | E | F | G | H (скрытая) |
-|---|---|---|---|---|---|---|---|
-| Дата MM/DD/YY | Vendor | Food $ | NonFood $ | Whole milk | Skim milk | 1% milk | receipt_id |
-
----
-
-## Notebook листы (читать перед началом)
-1. Roadmap — фазы проекта
-2. Zadachi — задачи (СЛЕДУЮЩИЙ = приоритет)
-3. Idei — архитектурные идеи
-4. Resheniya — 10 принципов
-5. CACFP_Receipt — статус Receipt системы
-6. CACFP_Checklist_with_Forms — чеклист с официальными формами
-7. Forms_Architecture — 5 групп форм
-8. Handoff — задача от предыдущего агента
-
-## Осталось сделать
-
-1. **Сортировка дат** — MM/DD/YY сортируется как текст, нужна правильная сортировка
-2. **Bank reconciliation** — BudgetSheet IMPORTRANGE → Bank_Transactions лист → сверка с FoodCost
-3. **Инструкция пользователя** — финальный документ на английском
-4. **VS Code / SaaS** — перенос в React + Supabase проект
-
----
-
-## Bank Reconciliation план
-
-\`\`\`
-BudgetSheet (банк) → IMPORTRANGE → Bank_Transactions лист
-                                           ↓
-                              Сверка с FoodCost по:
-                              дата + vendor + сумма
-                                           ↓
-                    ✅ Match  |  ⚠️ Mismatch  |  💵 Cash/Personal (skip)
-\`\`\`
-
-- **Corporate card** → автосверка
-- **Cash** → ручное подтверждение  
-- **Personal card** → список для возмещения
-
----
-
-## SQL для добавления колонок (если не выполнен)
-
-\`\`\`sql
-ALTER TABLE receipts
-  ADD COLUMN IF NOT EXISTS payment_method  text,
-  ADD COLUMN IF NOT EXISTS card_last4      text,
-  ADD COLUMN IF NOT EXISTS card_type       text,
-  ADD COLUMN IF NOT EXISTS non_cacfp_amt   numeric(10,2),
-  ADD COLUMN IF NOT EXISTS user_role       text,
-  ADD COLUMN IF NOT EXISTS buyer_name      text,
-  ADD COLUMN IF NOT EXISTS purchase_type   text;
-\`\`\`
-`;
-
-function openModal() {
-  document.getElementById('ctxContent').textContent = CONTEXT_MD;
-  document.getElementById('ctxModal').style.display = 'block';
+// ── Help panel ──
+function openHelp() {
+  document.getElementById('helpOverlay').classList.add('open');
+  document.getElementById('helpSheet').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
-function closeModal() {
-  document.getElementById('ctxModal').style.display = 'none';
+function closeHelp() {
+  document.getElementById('helpOverlay').classList.remove('open');
+  document.getElementById('helpSheet').classList.remove('open');
   document.body.style.overflow = '';
 }
-function copyContext() {
-  navigator.clipboard.writeText(CONTEXT_MD).then(function() {
-    var btn = document.getElementById('copyBtn');
-    btn.textContent = '✅ Copied! Now paste into Claude chat';
-    btn.style.background = '#38d9a9';
-    btn.style.color = '#0f1117';
-    setTimeout(function() {
-      btn.textContent = '📋 Copy All — Paste into Claude chat';
-      btn.style.background = '#4f8ef7';
-      btn.style.color = '#fff';
-    }, 3000);
-  });
-}
-// Close on backdrop click
-document.getElementById('ctxModal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
-</script>
 
+async function init() {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/app_settings?select=id,value`,
+      {headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON}});
+    const rows = await r.json();
+    rows.forEach(row => { cfg[row.id] = row.value; });
+  } catch(e) { console.warn('Settings:', e.message); }
+}
+
+function goTo(n) {
+  if (n > currentPage && !validate(currentPage)) return;
+  document.getElementById('page'+currentPage).classList.remove('active');
+  currentPage = n;
+  document.getElementById('page'+currentPage).classList.add('active');
+  for (let i=1; i<=2; i++) {
+    const s = document.getElementById('s'+i);
+    if (s) s.className = 'step'+(i<n?' done':i===n?' active':'');
+  }
+  if (n===2) buildSummary();
+  window.scrollTo(0,0);
+}
+
+function validate(n) {
+  if (n===1) {
+    if (!state.role) { alert('Please select your role.'); return false; }
+    if (!state.name) { alert('Please select your name.'); return false; }
+    if (state.role==='director' && !state.center) { alert('Please select your center.'); return false; }
+  }
+  return true;
+}
+
+function selectRole(role) {
+  state.role = role; state.name = ''; state.center = '';
+  document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('role-'+role).classList.add('selected');
+  const centerField = document.getElementById('center-field');
+  const nameField = document.getElementById('name-field');
+  const nameSelect = document.getElementById('name-select');
+  const centerSelect = document.getElementById('center-select');
+  if (role === 'director') {
+    const centers = cfg.centers.length ? cfg.centers :
+      [{id:'ridge',name:'Ridge',city:'Wickliffe'},
+       {id:'alpha',name:'Alpha',city:'Highland Heights'},
+       {id:'pearl',name:'Pearl',city:'Mentor'}];
+    centerSelect.innerHTML = '<option value="">-- Select center --</option>' +
+      centers.map(c=>`<option value="${c.id}">${c.name} — ${c.city}</option>`).join('');
+    centerSelect.onchange = function() { state.center=this.value; buildDirectorNames(this.value); };
+    centerField.style.display = 'block';
+    nameField.style.display = 'none';
+  } else {
+    centerField.style.display = 'none';
+    state.center = 'office';
+    const staff = (cfg.staff||[]).filter(s=>s.role==='purchasing');
+    const def = [{name:'Tatiana'},{name:'Larysa'},{name:'Philippe'},{name:'Ross'}];
+    const list = staff.length ? staff : def;
+    nameSelect.innerHTML = '<option value="">-- Select your name --</option>' +
+      list.map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
+    nameSelect.onchange = function() { state.name=this.value; };
+    nameField.style.display = 'block';
+  }
+}
+
+function buildDirectorNames(centerId) {
+  const nameField = document.getElementById('name-field');
+  const nameSelect = document.getElementById('name-select');
+  const staff = (cfg.staff||[]).filter(s=>s.role==='director'&&s.center===centerId);
+  const def = {ridge:[{name:'Sonia Texidor'}],alpha:[{name:'Theresa Rolf'}],pearl:[{name:'Carmen Santiago'}]};
+  const list = staff.length ? staff : (def[centerId]||[]);
+  nameSelect.innerHTML = '<option value="">-- Select your name --</option>' +
+    list.map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
+  nameSelect.onchange = function() { state.name=this.value; };
+  nameField.style.display = 'block';
+}
+
+function selectPayment(type) {
+  state.payment = type;
+  state.cashAmount=''; state.cashApprovedBy=''; state.reimburseTo=''; state.reimburseAmount='';
+  document.querySelectorAll('.pay-card').forEach(c => c.classList.remove('selected','corporate','cash','personal'));
+  const el = document.getElementById('pay-'+type);
+  if (el) { el.classList.add('selected'); el.classList.add(type); }
+  document.getElementById('extra-cash').classList.toggle('visible', type==='cash');
+  document.getElementById('extra-personal').classList.toggle('visible', type==='personal');
+  if (type==='personal' && state.name) {
+    document.getElementById('personal-reimburse-to').value = state.name;
+    state.reimburseTo = state.name;
+  } else {
+    document.getElementById('personal-reimburse-to').value = '';
+  }
+  document.getElementById('cash-amount').value = '';
+  document.getElementById('cash-approved-by').value = '';
+  document.getElementById('personal-amount').value = '';
+  updateSummaryPayment();
+  checkSubmitReady();
+}
+
+function updateSummaryPayment() {
+  if (!state.payment) return;
+  const labels = {corporate:'💳 Corporate Card', cash:'💵 Cash', personal:'👤 Personal Card'};
+  document.getElementById('sum-payment').innerHTML = `<span class="badge badge-${state.payment}">${labels[state.payment]}</span>`;
+  document.getElementById('sum-payment-row').style.display = 'flex';
+  const extraRow = document.getElementById('sum-extra-row');
+  const extraKey = document.getElementById('sum-extra-key');
+  const extraVal = document.getElementById('sum-extra-val');
+  if (state.payment==='cash' && (state.cashApprovedBy || state.cashAmount)) {
+    let txt = '';
+    if (state.cashAmount) txt += '$'+state.cashAmount;
+    if (state.cashApprovedBy) txt += (txt?' · ':'')+state.cashApprovedBy;
+    extraKey.textContent = 'Cash detail'; extraVal.textContent = txt; extraRow.style.display = 'flex';
+  } else if (state.payment==='personal' && (state.reimburseTo || state.reimburseAmount)) {
+    let txt = '';
+    if (state.reimburseTo) txt += state.reimburseTo;
+    if (state.reimburseAmount) txt += (txt?' · ':'')+' $'+state.reimburseAmount;
+    extraKey.textContent = 'Reimburse to'; extraVal.textContent = txt; extraRow.style.display = 'flex';
+  } else {
+    extraRow.style.display = 'none';
+  }
+}
+
+function buildSummary() {
+  const today = new Date();
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('sum-name').textContent = state.name;
+  document.getElementById('sum-role').innerHTML = `<span class="badge badge-${state.role}">${state.role}</span>`;
+  document.getElementById('sum-date').textContent = months[today.getMonth()]+' '+today.getDate()+', '+today.getFullYear();
+  document.getElementById('sum-photos').textContent = state.files.length+' file'+(state.files.length!==1?'s':'');
+  if (state.role==='director' && state.center) {
+    const centers = cfg.centers.length ? cfg.centers : [{id:'ridge',name:'Ridge'},{id:'alpha',name:'Alpha'},{id:'pearl',name:'Pearl'}];
+    const c = centers.find(x=>x.id===state.center);
+    document.getElementById('sum-center').textContent = c ? c.name : state.center;
+    document.getElementById('sum-center-row').style.display = 'flex';
+  }
+  updateSummaryPayment();
+}
+
+function handleFiles(files) {
+  for (const f of files) state.files.push(f);
+  renderThumbs();
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('drag');
+  handleFiles(e.dataTransfer.files);
+}
+
+function renderThumbs() {
+  const c = document.getElementById('thumbs');
+  c.innerHTML = '';
+  state.files.forEach((f,i) => {
+    const w = document.createElement('div'); w.className = 'thumb-wrap';
+    if (f.type.startsWith('image/')) {
+      const img = document.createElement('img'); img.className = 'thumb'; img.src = URL.createObjectURL(f); w.appendChild(img);
+    } else {
+      const d = document.createElement('div'); d.className = 'thumb-pdf'; d.textContent = '📄'; w.appendChild(d);
+    }
+    const del = document.createElement('button'); del.className = 'thumb-del'; del.textContent = '×';
+    del.onclick = () => { state.files.splice(i,1); renderThumbs(); };
+    w.appendChild(del); c.appendChild(w);
+  });
+  const hasFiles = state.files.length > 0;
+  document.getElementById('summary').style.display = hasFiles ? 'block' : 'none';
+  document.getElementById('sum-photos').textContent = state.files.length+' file'+(state.files.length!==1?'s':'');
+  checkSubmitReady();
+}
+
+function checkSubmitReady() {
+  document.getElementById('submitBtn').disabled = !(state.files.length > 0 && !!state.payment);
+}
+
+async function submitReceipt() {
+  const btn = document.getElementById('submitBtn');
+  const err = document.getElementById('submitError');
+  const bar = document.getElementById('progressBar');
+  const fill = document.getElementById('progressFill');
+  err.classList.remove('visible');
+  btn.disabled = true; btn.textContent = 'Uploading...';
+  bar.style.display = 'block'; fill.style.width = '10%';
+  const today = new Date();
+  const fiscal = today.toISOString().slice(0,7);
+  const dateStr = today.toISOString().slice(0,10);
+  const prefix = state.role==='director' ? `directors/${state.center}` : `purchasing`;
+  const filePaths = [];
+  try {
+    for (let i=0; i<state.files.length; i++) {
+      const f = state.files[i];
+      const ext = f.name.split('.').pop();
+      const who = state.name.split(' ')[0].toUpperCase();
+      const dt = dateStr.replace(/-/g,'').slice(4);
+      const ts = Date.now();
+      const path = `${prefix}/${fiscal}/${dt}_${who}_${ts}_${i+1}.${ext}`;
+      const up = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`,
+        { method:'POST', headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON,'Content-Type':f.type||'application/octet-stream'}, body:f });
+      if (!up.ok) throw new Error('Upload failed: '+await up.text());
+      filePaths.push(path);
+      fill.style.width = (10+75*(i+1)/state.files.length)+'%';
+    }
+    fill.style.width = '90%';
+    let payment_meta = null;
+    if (state.payment==='cash') {
+      payment_meta = { cash_amount: state.cashAmount || null, approved_by: state.cashApprovedBy || null };
+    } else if (state.payment==='personal') {
+      payment_meta = { reimburse_to: state.reimburseTo || null, reimburse_amount: state.reimburseAmount || null };
+    }
+    const rec = {
+      center: state.role==='director' ? state.center : 'office',
+      fiscal_month: fiscal, receipt_date: dateStr,
+      vendor: null, food_amt: null, nonfood_amt: null,
+      file_paths: filePaths, file_path: filePaths[0]||null,
+      user_role: state.role, buyer_name: state.name,
+      purchase_type: null, payment_method: state.payment || null,
+      payment_meta: payment_meta, status: 'pending'
+    };
+    const db = await fetch(`${SUPABASE_URL}/rest/v1/receipts`, {
+      method:'POST',
+      headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify(rec)
+    });
+    if (!db.ok) throw new Error('DB error: '+await db.text());
+    fill.style.width = '100%';
+    setTimeout(() => { bar.style.display='none'; showSuccess(); }, 400);
+  } catch(e) {
+    bar.style.display='none';
+    err.textContent = e.message; err.classList.add('visible');
+    btn.disabled=false; btn.textContent='✓ Submit';
+  }
+}
+
+function showSuccess() {
+  for (let i=1;i<=2;i++) document.getElementById('s'+i).className='step done';
+  document.getElementById('page2').classList.remove('active');
+  document.getElementById('page3').classList.add('active');
+  let extra = '';
+  if (state.payment==='cash' && state.cashApprovedBy) extra = `\nApproved by: ${state.cashApprovedBy}`;
+  if (state.payment==='personal' && state.reimburseTo) extra = `\nReimbursement to: ${state.reimburseTo}`;
+  document.getElementById('successMsg').textContent =
+    `Document submitted by ${state.name}.\n${state.files.length} photo${state.files.length!==1?'s':''} saved.${extra}\nAI will process automatically.`;
+}
+
+function resetForm() {
+  state = {role:'',name:'',center:'',payment:'',files:[],cashAmount:'',cashApprovedBy:'',reimburseTo:'',reimburseAmount:''};
+  for (let i=1;i<=3;i++) { const p=document.getElementById('page'+i); if(p) p.classList.remove('active'); }
+  document.querySelectorAll('.role-card,.pay-card').forEach(c=>c.classList.remove('selected','corporate','cash','personal'));
+  document.getElementById('center-field').style.display='none';
+  document.getElementById('name-field').style.display='none';
+  document.getElementById('thumbs').innerHTML='';
+  document.getElementById('summary').style.display='none';
+  document.getElementById('submitBtn').disabled=true;
+  document.getElementById('extra-cash').classList.remove('visible');
+  document.getElementById('extra-personal').classList.remove('visible');
+  for (let i=1;i<=2;i++) { const s=document.getElementById('s'+i); if(s) s.className='step'; }
+  currentPage=0; goTo(1);
+}
+
+init();
+</script>
 </body>
 </html>
