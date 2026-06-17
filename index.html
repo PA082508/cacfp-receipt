@@ -661,21 +661,15 @@ function resetForm() {
   currentPage=0; goTo(1);
 }
 
-init();
- <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js').catch(function(){});
-    });
-  }
-</script> 
-</script>
- <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js').catch(function(){});
-    });
-  }
-</script> 
-</body>
-</html>
+664  init();
+672  </script>          ← закрылся скрипт приложения
+673  <script>           ← отдельный SW-скрипт (оставляем)
+674    if ('serviceWorker' in navigator) {
+675      window.addEventListener('load', function () {
+676        navigator.serviceWorker.register('sw.js').catch(function(){});
+677      });
+678    }
+679  </script>
+     </body>
+     </html>
+
