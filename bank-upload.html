@@ -6,6 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f1117">
+<meta http-equiv="Cache-Control" content="no-store">  
 <title>Bank Upload — CACFP</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400&display=swap');
@@ -601,6 +602,13 @@ function resetForm() {
   document.getElementById('csvFile').value = '';
   hideErr();
 }
+  <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function(){});
+    });
+  }
+</script>
 </script>
 </body>
 </html>
