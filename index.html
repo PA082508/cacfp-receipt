@@ -618,12 +618,13 @@ async function submitReceipt() {
       purchase_type: null, payment_method: state.payment || null,
       payment_meta: payment_meta, status: 'pending'
     };
-    const db = await fetch(`${SUPABASE_URL}/rest/v1/receipts`, {
+    const res = await fetch('https://trrmyqfpxntmgxnqkikp.supabase.co/functions/v1/upload-receipt', {
       method:'POST',
-      headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON,'Content-Type':'application/json','Content-Profile':DB_SCHEMA,'Prefer':'return=minimal'},
-      body:JSON.stringify(rec)
+      headers:{'Content-Type':'application/json','x-upload-token':'pa_697d7c4186d7444084bd3b1e68d0182a'},
+      body:JSON.stringify({receipt:rec})
     });
-    if (!db.ok) throw new Error('DB error: '+await db.text());
+    const out = await res.json();
+    if (!res.ok) throw new Error(out.error || 'upload failed');
     fill.style.width = '100%';
     setTimeout(() => { bar.style.display='none'; showSuccess(); }, 400);
   } catch(e) {
