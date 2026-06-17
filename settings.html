@@ -327,13 +327,14 @@ function showToast(msg, isError=false) {
   setTimeout(()=>t.classList.add('show'),10);
   setTimeout(()=>t.classList.remove('show'),3000);
 }
-  <script>
+</script>
+
+<script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
       navigator.serviceWorker.register('sw.js').catch(function(){});
     });
   }
-</script>
-</script>
+</script> 
 </body>
 </html>
