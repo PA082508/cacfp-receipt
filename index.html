@@ -176,6 +176,7 @@ input[type=text]::placeholder{color:var(--muted);}
     <label class="label">Your Name</label>
     <select id="name-select"></select>
   </div>
+  <div class="error-box" id="step1Error"></div>
   <div class="btn-row">
     <button class="btn btn-primary" onclick="goTo(2)">Next →</button>
   </div>
@@ -417,28 +418,57 @@ async function init() {
 }
 
 function goTo(n) {
-  if (n > currentPage && !validate(currentPage)) return;
-  document.getElementById('page'+currentPage).classList.remove('active');
-  currentPage = n;
-  document.getElementById('page'+currentPage).classList.add('active');
-  for (let i=1; i<=2; i++) {
-    const s = document.getElementById('s'+i);
-    if (s) s.className = 'step'+(i<n?' done':i===n?' active':'');
+  try {
+    if (n > currentPage && !validate(currentPage)) return;
+    const cur = document.getElementById('page'+currentPage);
+    if (cur) cur.classList.remove('active');
+    currentPage = n;
+    const next = document.getElementById('page'+currentPage);
+    if (next) next.classList.add('active');
+    for (let i=1; i<=2; i++) {
+      const s = document.getElementById('s'+i);
+      if (s) s.className = 'step'+(i<n?' done':i===n?' active':'');
+    }
+    if (n===2) buildSummary();
+    window.scrollTo(0,0);
+  } catch (e) {
+    console.error('[receipt] goTo('+n+') failed:', e);
+    step1Error('Something went wrong — please try again.');
   }
-  if (n===2) buildSummary();
-  window.scrollTo(0,0);
+}
+
+// Inline, non-blocking error. NOTE: never use alert()/confirm() here — in iOS
+// "Add to Home Screen" standalone mode those modals freeze the whole web app.
+function step1Error(msg) {
+  const box = document.getElementById('step1Error');
+  if (box) { box.textContent = msg; box.classList.add('visible'); }
+  else { console.error('[receipt] '+msg); }
+  return false;
+}
+function clearStep1Error() {
+  const box = document.getElementById('step1Error');
+  if (box) { box.textContent = ''; box.classList.remove('visible'); }
 }
 
 function validate(n) {
   if (n===1) {
-    if (!state.role) { alert('Please select your role.'); return false; }
-    if (!state.name) { alert('Please select your name.'); return false; }
-    if (state.role==='director' && !state.center) { alert('Please select your center.'); return false; }
+    // iOS native <select> sometimes doesn't fire 'change' (e.g. when the
+    // already-shown option is chosen), so read the live DOM values as a fallback.
+    const nameSel = document.getElementById('name-select');
+    const centerSel = document.getElementById('center-select');
+    if (nameSel && nameSel.value) state.name = nameSel.value;
+    if (centerSel && centerSel.value) state.center = centerSel.value;
+
+    if (!state.role) return step1Error('Please select your role.');
+    if (state.role==='director' && !state.center) return step1Error('Please select your center.');
+    if (!state.name) return step1Error('Please select your name.');
+    clearStep1Error();
   }
   return true;
 }
 
 function selectRole(role) {
+  clearStep1Error();
   state.role = role; state.name = ''; state.center = '';
   document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('selected'));
   document.getElementById('role-'+role).classList.add('selected');
@@ -453,7 +483,7 @@ function selectRole(role) {
        {id:'pearl',name:'Pearl',city:'Mentor'}];
     centerSelect.innerHTML = '<option value="">-- Select center --</option>' +
       centers.map(c=>`<option value="${c.id}">${c.name} — ${c.city}</option>`).join('');
-    centerSelect.onchange = function() { state.center=this.value; buildDirectorNames(this.value); };
+    centerSelect.onchange = function() { clearStep1Error(); state.center=this.value; buildDirectorNames(this.value); };
     centerField.style.display = 'block';
     nameField.style.display = 'none';
   } else {
@@ -464,7 +494,7 @@ function selectRole(role) {
     const list = staff.length ? staff : def;
     nameSelect.innerHTML = '<option value="">-- Select your name --</option>' +
       list.map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
-    nameSelect.onchange = function() { state.name=this.value; };
+    nameSelect.onchange = function() { clearStep1Error(); state.name=this.value; };
     nameField.style.display = 'block';
   }
 }
@@ -661,14 +691,14 @@ function resetForm() {
   currentPage=0; goTo(1);
 }
 
-664  init();
-672  </script>          ← закрылся скрипт приложения
-673  <script>           ← отдельный SW-скрипт (оставляем)
-674    if ('serviceWorker' in navigator) {
-675      window.addEventListener('load', function () {
-676        navigator.serviceWorker.register('sw.js').catch(function(){});
-677      });
-678    }
-679  </script>
-     </body>
-     </html>
+init();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function(){});
+    });
+  }
+</script>
+</body>
+</html>
