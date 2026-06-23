@@ -173,6 +173,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 #tab-receipt .success-icon{width:64px;height:64px;border-radius:50%;background:var(--green);color:#08231a;font-size:34px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
 #tab-receipt .success-title{font-size:20px;font-weight:600;margin-bottom:8px;}
 #tab-receipt .success-sub{font-size:13px;color:var(--muted);line-height:1.6;white-space:pre-line;margin-bottom:20px;}
+
+/* URGENT ALERT BANNER + MESSAGES */
+.alert-banner{position:fixed;top:0;left:0;right:0;z-index:200;background:var(--danger);color:#fff;display:flex;align-items:center;gap:10px;padding:calc(14px + env(safe-area-inset-top)) 18px 14px;font-size:14px;font-weight:600;transform:translateY(-130%);transition:transform .35s cubic-bezier(.2,.8,.2,1);box-shadow:0 6px 22px rgba(0,0,0,.4);cursor:pointer;}
+.alert-banner.show{transform:translateY(0);}
+.ab-icon{font-size:20px;flex-shrink:0;}
+.ab-msg{flex:1;line-height:1.3;}
+.tab{position:relative;}
+.tab-badge{position:absolute;top:7px;left:calc(50% + 5px);background:var(--danger);color:#fff;font-size:9px;font-weight:700;min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1;}
+.msg{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;}
+.msg.unread{border-left:4px solid var(--accent);}
+.msg.unread .msg-text{font-weight:700;color:#fff;}
+.msg-text{font-size:14px;line-height:1.4;color:var(--text);}
+.msg-time{font-size:11px;color:var(--muted);margin-top:6px;}
 </style>
 </head>
 <body>
@@ -206,13 +219,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div id="tab-delivery"></div>
     <div id="tab-purchase" class="hidden"></div>
     <div id="tab-receipt" class="hidden"></div>
+    <div id="tab-messages" class="hidden"></div>
   </div>
 
   <div class="tabbar">
     <div class="tab" id="nav-delivery" onclick="switchTab('delivery')"><div class="ic">🚚</div>Delivery</div>
     <div class="tab" id="nav-purchase" onclick="switchTab('purchase')"><div class="ic">🛒</div>Purchase</div>
     <div class="tab" id="nav-receipt" onclick="switchTab('receipt')"><div class="ic">📷</div>Receipt</div>
+    <div class="tab" id="nav-messages" onclick="switchTab('messages')"><div class="ic">📬</div>Messages</div>
   </div>
+</div>
+
+<!-- URGENT ALERT BANNER -->
+<div class="alert-banner" id="alertBanner" onclick="bannerTap()">
+  <span class="ab-icon">📣</span>
+  <span class="ab-msg" id="alertBannerMsg"></span>
 </div>
 
 <!-- HELP -->
@@ -250,6 +271,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 const SUPABASE_URL  = 'https://trrmyqfpxntmgxnqkikp.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko';
 const DB_SCHEMA = 'menumaker';
+const ALERT_ROLE = 'driver';   // 'driver' for driver-app, 'purchasing' for purchasing-app
 
 const state = { role: null, tab: 'delivery' };
 
@@ -271,10 +293,12 @@ async function rpc(fn, args) {
 
 function selectRole(role) {
   state.role = role;
+  ensureAudio();   // prime audio within this tap so the alert beep can play on iOS
   document.getElementById('roleScreen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('roleTag').textContent = (role === 'driver' ? 'Route Driver' : 'Purchasing') + ' ⟳';
   switchTab(role === 'purchasing' ? 'purchase' : 'delivery');
+  initAlerts();
 }
 function resetRole() {
   state.role = null;
@@ -282,17 +306,18 @@ function resetRole() {
   document.getElementById('roleScreen').classList.remove('hidden');
 }
 
-const TAB_TITLES = { delivery: 'Delivery', purchase: 'Purchase', receipt: 'Receipt Upload' };
+const TAB_TITLES = { delivery: 'Delivery', purchase: 'Purchase', receipt: 'Receipt Upload', messages: 'Messages' };
 function switchTab(name) {
   state.tab = name;
-  ['delivery','purchase','receipt'].forEach(t => {
-    document.getElementById('tab-' + t).classList.toggle('hidden', t !== name);
-    document.getElementById('nav-' + t).classList.toggle('active', t === name);
+  ['delivery','purchase','receipt','messages'].forEach(t => {
+    const c = document.getElementById('tab-' + t); if (c) c.classList.toggle('hidden', t !== name);
+    const nv = document.getElementById('nav-' + t); if (nv) nv.classList.toggle('active', t === name);
   });
   document.getElementById('tabTitle').textContent = TAB_TITLES[name];
   if (name === 'delivery') loadDelivery();
   if (name === 'purchase') loadPurchase();
   if (name === 'receipt')  initReceipt();
+  if (name === 'messages') renderMessages();
 }
 
 // ─── DELIVERY ───────────────────────────────────────────────────────────────
@@ -589,6 +614,81 @@ function showInline(afterEl, msg) {
   box.textContent = msg;
   return false;
 }
+
+// ─── MESSAGES / URGENT ALERTS ────────────────────────────────────────────────
+let alerts = [];
+const LS_READ = 'mm_alerts_read_' + ALERT_ROLE;   // ids the user has opened
+const LS_SEEN = 'mm_alerts_seen_' + ALERT_ROLE;   // ids already shown as a banner (no repeats)
+
+function lsGet(key) { try { return new Set(JSON.parse(localStorage.getItem(key) || '[]')); } catch { return new Set(); } }
+function lsAdd(key, ids) { try { const s = lsGet(key); ids.forEach(id => s.add(id)); localStorage.setItem(key, JSON.stringify([...s])); } catch {} }
+
+// Audio must be primed inside a user gesture (selectRole tap) so iOS allows the beep.
+let audioCtx = null;
+function ensureAudio() {
+  try {
+    if (!audioCtx) { const C = window.AudioContext || window.webkitAudioContext; if (C) audioCtx = new C(); }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  } catch (e) {}
+}
+function beep() {
+  try {
+    ensureAudio(); if (!audioCtx) return;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    o.type = 'sine'; o.frequency.value = 880;
+    const t = audioCtx.currentTime;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.25, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+    o.start(t); o.stop(t + 0.32);
+  } catch (e) {}
+}
+
+async function initAlerts() {
+  try {
+    const rows = await rpc('get_urgent_alerts', { p_role: ALERT_ROLE });
+    alerts = Array.isArray(rows) ? rows : [];
+  } catch (e) { console.warn('[alerts] load failed:', e.message); alerts = []; }
+  updateMsgBadge();
+  const seen = lsGet(LS_SEEN);
+  const fresh = alerts.filter(a => a && a.id && !seen.has(a.id));
+  if (fresh.length) { lsAdd(LS_SEEN, fresh.map(a => a.id)); showBanner(fresh); }
+}
+
+function unreadCount() { const read = lsGet(LS_READ); return alerts.filter(a => !read.has(a.id)).length; }
+function updateMsgBadge() {
+  const nav = document.getElementById('nav-messages'); if (!nav) return;
+  const n = unreadCount();
+  let b = nav.querySelector('.tab-badge');
+  if (n > 0) { if (!b) { b = document.createElement('span'); b.className = 'tab-badge'; nav.appendChild(b); } b.textContent = n > 9 ? '9+' : n; }
+  else if (b) { b.remove(); }
+}
+
+let bannerTimer = null;
+function showBanner(list) {
+  const msg = list.length === 1 ? list[0].message : (list.length + ' new alerts — tap to view');
+  document.getElementById('alertBannerMsg').textContent = msg;
+  document.getElementById('alertBanner').classList.add('show');
+  beep();
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(closeBanner, 4000);
+}
+function closeBanner() { document.getElementById('alertBanner').classList.remove('show'); clearTimeout(bannerTimer); }
+function bannerTap() { closeBanner(); switchTab('messages'); }
+
+function fmtDateTime(iso) { try { return new Date(iso).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch { return ''; } }
+function renderMessages() {
+  const root = document.getElementById('tab-messages');
+  if (!alerts.length) { root.innerHTML = '<div class="muted-center">No messages.</div>'; return; }
+  const read = lsGet(LS_READ);
+  root.innerHTML = alerts.map(a => `
+    <div class="msg${read.has(a.id) ? '' : ' unread'}" onclick="markRead('${a.id}')">
+      <div class="msg-text">${esc(a.message)}</div>
+      <div class="msg-time">${fmtDateTime(a.created_at)}</div>
+    </div>`).join('');
+}
+function markRead(id) { lsAdd(LS_READ, [id]); updateMsgBadge(); renderMessages(); }
 </script>
 </body>
 </html>
