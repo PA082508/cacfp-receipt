@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Driver">
+<meta name="theme-color" content="#0f1117">
+<meta http-equiv="Cache-Control" content="no-store">
+<title>Driver / Purchaser App</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2a2d3a;--accent:#4f8ef7;--green:#38d9a9;--amber:#f7c94f;--danger:#ff6b6b;--text:#e8eaf0;--muted:#6b7280;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.hidden{display:none!important;}
+
+/* ROLE SELECT */
+.role-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:14px;}
+.role-logo{font-size:44px;margin-bottom:4px;}
+.role-title{font-size:22px;font-weight:600;margin-bottom:2px;}
+.role-sub{font-size:13px;color:var(--muted);margin-bottom:18px;}
+.role-card{width:100%;max-width:340px;background:var(--surface2);border:1.5px solid var(--border);border-radius:16px;padding:22px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:border-color .15s;}
+.role-card:active{border-color:var(--accent);}
+.role-card .ic{font-size:30px;}
+.role-card .nm{font-size:17px;font-weight:600;}
+.role-card .ds{font-size:12px;color:var(--muted);margin-top:2px;}
+
+/* APP SHELL */
+.app{min-height:100vh;padding-bottom:72px;}
+.topbar{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;}
+.topbar .t{font-size:17px;font-weight:600;}
+.topbar .r{font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:4px 10px;border-radius:20px;}
+.content{padding:16px;}
+
+/* TAB BAR */
+.tabbar{position:fixed;left:0;right:0;bottom:0;height:64px;background:var(--surface);border-top:1px solid var(--border);display:flex;padding-bottom:env(safe-area-inset-bottom);}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--muted);font-size:10px;font-weight:600;}
+.tab .ic{font-size:21px;}
+.tab.active{color:var(--accent);}
+
+/* DELIVERY */
+.route-banner{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:13px;}
+.route-banner b{color:#fff;}
+.route-path{margin-top:6px;color:var(--muted);font-size:12px;}
+.slot-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin:18px 0 8px;}
+.stop{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;}
+.stop-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.stop-name{font-size:16px;font-weight:600;}
+.stop-when{font-size:12px;color:var(--muted);margin-top:2px;}
+.badge{font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em;}
+.badge.pending{background:rgba(107,114,128,.18);color:#9aa3b2;}
+.badge.dispatched{background:rgba(247,201,79,.15);color:var(--amber);}
+.badge.delivered{background:rgba(56,217,169,.15);color:var(--green);}
+.cont{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:13px;}
+.cont .em{font-size:18px;}
+.cont .meta{flex:1;}
+.cont .mt{font-weight:600;}
+.cont .sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.cont .rcv{font-size:11px;color:var(--green);}
+.temps{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;}
+.temps label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:5px;}
+.temps input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:inherit;font-size:16px;padding:11px 12px;outline:none;}
+.temps input:focus{border-color:var(--accent);}
+.btn{width:100%;padding:14px;border-radius:12px;font-family:inherit;font-size:15px;font-weight:600;border:none;cursor:pointer;}
+.btn-deliver{background:var(--green);color:#08231a;}
+.btn-deliver:disabled{background:var(--border);color:var(--muted);}
+.delivered-note{font-size:12px;color:var(--green);text-align:center;padding:8px;}
+.err{background:rgba(255,107,107,.1);border:1px solid var(--danger);color:var(--danger);border-radius:10px;padding:10px 12px;font-size:12px;margin-bottom:12px;}
+.muted-center{text-align:center;color:var(--muted);font-size:13px;padding:40px 20px;}
+.soon{text-align:center;padding:60px 24px;color:var(--muted);}
+.soon .ic{font-size:48px;margin-bottom:14px;}
+.soon .t{font-size:17px;font-weight:600;color:var(--text);margin-bottom:6px;}
+.soon .d{font-size:13px;line-height:1.5;}
+
+/* PURCHASE */
+.order{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;}
+.order-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.order-vendor{font-size:16px;font-weight:600;}
+.badge.submitted{background:rgba(79,142,247,.15);color:var(--accent);}
+.badge.received{background:rgba(56,217,169,.15);color:var(--green);}
+.pitem{display:flex;align-items:center;gap:12px;padding:11px 4px;border-top:1px solid var(--border);cursor:pointer;}
+.pitem:first-of-type{border-top:none;}
+.cbx{width:24px;height:24px;border-radius:7px;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#08231a;font-weight:700;font-size:14px;}
+.pitem.on .cbx{background:var(--green);border-color:var(--green);}
+.pitem.on .cbx:after{content:'✓';}
+.pitem.on .pname{text-decoration:line-through;color:var(--muted);}
+.pmeta{flex:1;display:flex;justify-content:space-between;gap:8px;font-size:14px;}
+.pqty{color:var(--muted);font-size:13px;white-space:nowrap;}
+.btn-complete{background:var(--accent);color:#fff;margin-top:12px;}
+.order.done{opacity:.55;}
+
+/* RECEIPT */
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:6px;}
+.field select,.field input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:16px;padding:12px;outline:none;}
+.field select:focus,.field input:focus{border-color:var(--accent);}
+.amts{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.photo-zone{border:2px dashed var(--border);border-radius:14px;padding:28px 16px;text-align:center;position:relative;overflow:hidden;margin-bottom:14px;cursor:pointer;}
+.photo-zone input{position:absolute;inset:0;opacity:0;font-size:0;}
+.photo-zone .pi{font-size:38px;}
+.photo-zone .pl{font-size:14px;font-weight:600;margin-top:6px;}
+.photo-zone .ph{font-size:12px;color:var(--muted);margin-top:3px;}
+.photo-thumb{max-width:100%;max-height:200px;border-radius:10px;margin-bottom:14px;display:block;}
+.btn-submit{background:var(--green);color:#08231a;}
+.ok-msg{background:rgba(56,217,169,.12);border:1px solid var(--green);color:var(--green);border-radius:10px;padding:12px;font-size:13px;text-align:center;margin-top:12px;}
+</style>
+</head>
+<body>
+
+<!-- ROLE SELECT -->
+<div class="role-screen" id="roleScreen">
+  <div class="role-logo">🚚</div>
+  <div class="role-title">Field App</div>
+  <div class="role-sub">Play Academy · select your role</div>
+  <div class="role-card" onclick="selectRole('driver')">
+    <div class="ic">🚚</div>
+    <div><div class="nm">Driver</div><div class="ds">Delivery route, temps, confirmations</div></div>
+  </div>
+  <div class="role-card" onclick="selectRole('purchasing')">
+    <div class="ic">🛒</div>
+    <div><div class="nm">Purchasing Staff</div><div class="ds">Purchase orders & receipt upload</div></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app hidden" id="app">
+  <div class="topbar">
+    <div class="t" id="tabTitle">Delivery</div>
+    <div class="r" id="roleTag" onclick="resetRole()">— ⟳</div>
+  </div>
+
+  <div class="content">
+    <div id="tab-delivery"></div>
+    <div id="tab-purchase" class="hidden"></div>
+    <div id="tab-receipt" class="hidden"></div>
+  </div>
+
+  <div class="tabbar">
+    <div class="tab" id="nav-delivery" onclick="switchTab('delivery')"><div class="ic">🚚</div>Delivery</div>
+    <div class="tab" id="nav-purchase" onclick="switchTab('purchase')"><div class="ic">🛒</div>Purchase</div>
+    <div class="tab" id="nav-receipt" onclick="switchTab('receipt')"><div class="ic">📷</div>Receipt</div>
+  </div>
+</div>
+
+<script>
+// === MenuMaker (project trrmyqfpxntmgxnqkikp) — anon publishable key (safe in client) ===
+const SUPABASE_URL  = 'https://trrmyqfpxntmgxnqkikp.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko';
+const DB_SCHEMA = 'menumaker';
+
+const state = { role: null, tab: 'delivery' };
+
+// Call a SECURITY DEFINER RPC in the menumaker schema as the anon role.
+async function rpc(fn, args) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_ANON,
+      'Authorization': 'Bearer ' + SUPABASE_ANON,
+      'Content-Type': 'application/json',
+      'Content-Profile': DB_SCHEMA,
+    },
+    body: JSON.stringify(args || {}),
+  });
+  if (!r.ok) throw new Error('API ' + r.status + ': ' + await r.text());
+  return r.json();
+}
+
+function selectRole(role) {
+  state.role = role;
+  document.getElementById('roleScreen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('roleTag').textContent = (role === 'driver' ? 'Driver' : 'Purchasing') + ' ⟳';
+  switchTab(role === 'purchasing' ? 'purchase' : 'delivery');
+}
+function resetRole() {
+  state.role = null;
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('roleScreen').classList.remove('hidden');
+}
+
+const TAB_TITLES = { delivery: 'Delivery', purchase: 'Purchase', receipt: 'Receipt Upload' };
+function switchTab(name) {
+  state.tab = name;
+  ['delivery','purchase','receipt'].forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('hidden', t !== name);
+    document.getElementById('nav-' + t).classList.toggle('active', t === name);
+  });
+  document.getElementById('tabTitle').textContent = TAB_TITLES[name];
+  if (name === 'delivery') loadDelivery();
+  if (name === 'purchase') loadPurchase();
+  if (name === 'receipt')  initReceipt();
+}
+
+// ─── DELIVERY ───────────────────────────────────────────────────────────────
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function fmtTime(iso){ try { return new Date(iso).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}); } catch { return ''; } }
+
+async function loadDelivery() {
+  const root = document.getElementById('tab-delivery');
+  root.innerHTML = '<div class="muted-center">Loading today’s route…</div>';
+  let routes;
+  try {
+    routes = await rpc('driver_today_route', {});
+  } catch (e) {
+    console.error('[driver] route load failed:', e);
+    root.innerHTML = '<div class="err">Could not load route. ' + esc(e.message) + '</div>';
+    return;
+  }
+  if (!Array.isArray(routes) || routes.length === 0) {
+    root.innerHTML = '<div class="muted-center">No delivery route scheduled for today.</div>';
+    return;
+  }
+
+  let html = '';
+  routes.forEach(route => {
+    html += `<div class="route-banner"><b>${esc(route.from_center || 'Kitchen')}</b> · ${esc(route.delivery_date)}
+      <div class="route-path">${(route.stops||[]).map(s=>esc(s.center)+' '+esc(s.arrival_window)).join('  →  ')}</div></div>`;
+    html += `<div class="slot-label">${esc(route.meal_slot || 'route')}</div>`;
+    (route.stops || []).forEach(s => {
+      const delivered = !!s.confirmed_at;
+      const conts = (s.containers || []).map(c => `
+        <div class="cont"><span class="em">🍱</span>
+          <div class="meta"><div class="mt">${esc(c.meal_type || 'Container')}</div>
+            <div class="sub">${c.portions||0} portions · ${esc(c.type||'')}${c.label?(' · '+esc(c.label)):''}</div></div>
+          ${c.received ? '<span class="rcv">✓</span>' : ''}
+        </div>`).join('');
+      const did = 'd_' + s.stop_id, rid = 'r_' + s.stop_id;
+      html += `<div class="stop">
+        <div class="stop-head">
+          <div><div class="stop-name">Stop ${s.stop_order}: ${esc(s.center)}</div>
+            <div class="stop-when">Arrival ${esc(s.arrival_window || '')}</div></div>
+          <span class="badge ${esc(s.status)}">${esc(s.status)}</span>
+        </div>
+        ${conts || '<div class="sub" style="color:var(--muted);font-size:12px;margin-bottom:8px;">No containers listed.</div>'}
+        ${delivered ? `<div class="delivered-note">✓ Delivered ${fmtTime(s.confirmed_at)} · dispatch ${s.temp_at_dispatch??'—'}°F · receipt ${s.temp_at_receipt??'—'}°F</div>`
+          : `<div class="temps">
+               <div><label>Temp at dispatch °F</label><input id="${did}" type="number" inputmode="decimal" step="0.1" placeholder="e.g. 41"></div>
+               <div><label>Temp at receipt °F</label><input id="${rid}" type="number" inputmode="decimal" step="0.1" placeholder="e.g. 40"></div>
+             </div>
+             <button class="btn btn-deliver" onclick="confirmStop('${s.stop_id}','${did}','${rid}',this)">Delivered ✓</button>`}
+      </div>`;
+    });
+  });
+  root.innerHTML = html;
+}
+
+async function confirmStop(stopId, dispatchId, receiptId, btn) {
+  const dv = document.getElementById(dispatchId).value;
+  const rv = document.getElementById(receiptId).value;
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    const res = await rpc('driver_confirm_stop', {
+      p_stop_id: stopId,
+      p_temp_dispatch: dv === '' ? null : Number(dv),
+      p_temp_receipt:  rv === '' ? null : Number(rv),
+    });
+    if (res && res.ok === false) throw new Error(res.error || 'failed');
+    await loadDelivery();
+  } catch (e) {
+    // NEVER use alert() — it freezes iOS "Add to Home Screen" standalone apps.
+    console.error('[driver] confirm failed:', e);
+    btn.disabled = false; btn.textContent = 'Delivered ✓';
+    let box = btn.nextElementSibling;
+    if (!box || !box.classList.contains('err')) {
+      box = document.createElement('div'); box.className = 'err'; box.style.marginTop = '10px';
+      btn.parentNode.insertBefore(box, btn.nextSibling);
+    }
+    box.textContent = 'Could not save: ' + e.message;
+  }
+}
+
+// ─── PURCHASE ────────────────────────────────────────────────────────────────
+async function loadPurchase() {
+  const root = document.getElementById('tab-purchase');
+  root.innerHTML = '<div class="muted-center">Loading today’s orders…</div>';
+  let orders;
+  try { orders = await rpc('purchaser_today_orders', {}); }
+  catch (e) { console.error('[purchase] load failed:', e); root.innerHTML = '<div class="err">Could not load orders. '+esc(e.message)+'</div>'; return; }
+  if (!Array.isArray(orders) || orders.length === 0) { root.innerHTML = '<div class="muted-center">No purchase orders for today.</div>'; return; }
+  let html = '';
+  orders.forEach((o, i) => {
+    const oid = o.order_id || ('mock' + i);
+    const done = o.status === 'received';
+    const items = (o.items || []).map(it => `
+      <div class="pitem${done?' on':''}" onclick="this.classList.toggle('on')">
+        <div class="cbx"></div>
+        <div class="pmeta"><span class="pname">${esc(it.name)}</span><span class="pqty">${esc(it.qty)} ${esc(it.unit||'')}</span></div>
+      </div>`).join('');
+    html += `<div class="order${done?' done':''}" id="ord_${oid}">
+      <div class="order-head"><div class="order-vendor">🏬 ${esc(o.vendor)}</div>
+        <span class="badge ${esc(o.status)}">${esc(o.status)}</span></div>
+      ${items}
+      ${done ? '<div class="ok-msg">✓ Order complete</div>'
+        : `<button class="btn btn-complete" onclick="completeOrder('${o.order_id||''}','${oid}',this)">Order Complete ✓</button>`}
+    </div>`;
+  });
+  root.innerHTML = html;
+}
+
+async function completeOrder(orderId, domId, btn) {
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    if (orderId) {
+      const res = await rpc('complete_order', { p_order_id: orderId });
+      if (res && res.ok === false) throw new Error(res.error || 'failed');
+    }
+    document.getElementById('ord_' + domId).classList.add('done');
+    btn.outerHTML = '<div class="ok-msg">✓ Order complete</div>';
+  } catch (e) {
+    console.error('[purchase] complete failed:', e);
+    btn.disabled = false; btn.textContent = 'Order Complete ✓';
+    showInline(btn, 'Could not save: ' + e.message);
+  }
+}
+
+// ─── RECEIPT ─────────────────────────────────────────────────────────────────
+let receiptFile = null;
+function initReceipt() {
+  const root = document.getElementById('tab-receipt');
+  if (root.dataset.ready) return;
+  root.dataset.ready = '1';
+  root.innerHTML = `
+    <div class="field"><label>Center</label>
+      <select id="rc-center"><option value="">— Select center —</option>
+        <option>Alpha</option><option>Pearl</option><option>Ridge</option></select></div>
+    <div class="field"><label>Your name</label><input id="rc-buyer" type="text" placeholder="Buyer name"></div>
+    <div class="field"><label>Vendor / store</label><input id="rc-vendor" type="text" placeholder="e.g. Costco"></div>
+    <div class="photo-zone">
+      <input type="file" accept="image/*" capture="environment" id="rc-photo" onchange="onReceiptPhoto(this)">
+      <div class="pi">📷</div><div class="pl" id="rc-photo-label">Tap to photograph receipt</div>
+      <div class="ph">JPG / PNG · stored in Supabase</div>
+    </div>
+    <img id="rc-thumb" class="photo-thumb" style="display:none">
+    <div class="amts">
+      <div class="field"><label>Food $</label><input id="rc-food" type="number" inputmode="decimal" step="0.01" placeholder="0.00"></div>
+      <div class="field"><label>Non-food $</label><input id="rc-nonfood" type="number" inputmode="decimal" step="0.01" placeholder="0.00"></div>
+    </div>
+    <button class="btn btn-submit" id="rc-submit" onclick="submitReceipt(this)">Submit Receipt ✓</button>
+    <div id="rc-status"></div>`;
+}
+function onReceiptPhoto(input) {
+  receiptFile = (input.files && input.files[0]) ? input.files[0] : null;
+  const thumb = document.getElementById('rc-thumb');
+  const label = document.getElementById('rc-photo-label');
+  if (receiptFile) {
+    thumb.src = URL.createObjectURL(receiptFile); thumb.style.display = 'block';
+    label.textContent = '✓ ' + receiptFile.name;
+  }
+}
+async function submitReceipt(btn) {
+  const center  = document.getElementById('rc-center').value;
+  const buyer   = document.getElementById('rc-buyer').value.trim();
+  const vendor  = document.getElementById('rc-vendor').value.trim();
+  const food    = document.getElementById('rc-food').value;
+  const nonfood = document.getElementById('rc-nonfood').value;
+  const status  = document.getElementById('rc-status');
+  status.innerHTML = '';
+  if (!center)      return showInline(btn, 'Please select a center.');
+  if (!buyer)       return showInline(btn, 'Please enter your name.');
+  if (!receiptFile) return showInline(btn, 'Please attach a receipt photo.');
+
+  btn.disabled = true; btn.textContent = 'Uploading…';
+  try {
+    const ext = (receiptFile.name.split('.').pop() || 'jpg').toLowerCase();
+    const path = `driver/${center.toLowerCase()}/${Date.now()}_${buyer.replace(/[^a-z0-9]+/gi,'-')}.${ext}`;
+    const up = await fetch(`${SUPABASE_URL}/storage/v1/object/receipts/${path}`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON,
+                 'Content-Type': receiptFile.type || 'application/octet-stream' },
+      body: receiptFile,
+    });
+    if (!up.ok) throw new Error('upload ' + up.status + ': ' + await up.text());
+
+    const res = await rpc('submit_receipt', {
+      p_center: center, p_vendor: vendor || null, p_buyer: buyer,
+      p_food_amt: food === '' ? null : Number(food),
+      p_file_path: path,
+      p_nonfood_amt: nonfood === '' ? null : Number(nonfood),
+    });
+    if (res && res.ok === false) throw new Error(res.error || 'insert failed');
+
+    status.innerHTML = '<div class="ok-msg">✓ Receipt submitted — AI will process it automatically.</div>';
+    btn.disabled = false; btn.textContent = 'Submit Receipt ✓';
+    receiptFile = null;
+    document.getElementById('rc-photo').value = '';
+    document.getElementById('rc-thumb').style.display = 'none';
+    document.getElementById('rc-photo-label').textContent = 'Tap to photograph receipt';
+    ['rc-food','rc-nonfood','rc-vendor'].forEach(id => document.getElementById(id).value = '');
+  } catch (e) {
+    console.error('[receipt] submit failed:', e);
+    btn.disabled = false; btn.textContent = 'Submit Receipt ✓';
+    showInline(btn, 'Could not submit: ' + e.message);
+  }
+}
+
+// Shared non-blocking inline error (never alert() — freezes iOS standalone).
+function showInline(afterEl, msg) {
+  let box = afterEl.nextElementSibling;
+  if (!box || !box.classList.contains('err')) {
+    box = document.createElement('div'); box.className = 'err'; box.style.marginTop = '10px';
+    afterEl.parentNode.insertBefore(box, afterEl.nextSibling);
+  }
+  box.textContent = msg;
+  return false;
+}
+</script>
+</body>
+</html>
