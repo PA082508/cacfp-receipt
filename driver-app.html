@@ -184,7 +184,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <div class="role-sub">Play Academy · select your role</div>
   <div class="role-card" onclick="selectRole('driver')">
     <div class="ic">🚚</div>
-    <div><div class="nm">Driver</div><div class="ds">Delivery route, temps, confirmations</div></div>
+    <div><div class="nm">Route Driver</div><div class="ds">Delivery · Purchasing · Receipt upload</div></div>
   </div>
   <div class="role-card" onclick="selectRole('purchasing')">
     <div class="ic">🛒</div>
@@ -220,7 +220,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <div class="help-sheet" id="helpSheet">
   <div class="help-handle"></div>
   <div class="help-header">
-    <span class="help-header-title">How to Use This App</span>
+    <span class="help-header-title">Route Driver Guide</span>
     <button class="help-close" onclick="closeHelp()">✕ Close</button>
   </div>
   <div class="help-body">
@@ -236,11 +236,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="help-item"><div class="help-emoji">✅</div><div class="help-text">Tap <b>“Order Complete ✓”</b> when done at each store.</div></div>
     </div>
     <div class="help-section">
-      <div class="help-section-title">📷 Receipt Upload</div>
-      <div class="help-item"><div class="help-emoji">🛒</div><div class="help-text">Tap <b>Purchasing Staff</b> and select <b>your name</b>.</div></div>
-      <div class="help-item"><div class="help-emoji">💳</div><div class="help-text">Choose <b>how it was paid</b> — Corporate Card, Cash (amount + approving director), or Personal Card (reimbursement).</div></div>
-      <div class="help-item"><div class="help-emoji">📷</div><div class="help-text"><b>Photograph the receipt</b> (multiple photos OK), then tap <b>“Submit Receipt ✓”</b>.</div></div>
-      <div class="help-item"><div class="help-emoji">🤖</div><div class="help-text">AI automatically reads the <b>vendor and amounts</b> (food vs non-food) — you don’t enter them.</div></div>
+      <div class="help-section-title">📷 Receipt</div>
+      <div class="help-item"><div class="help-emoji">💳</div><div class="help-text">Select <b>how the purchase was paid</b>: Corporate Card / Cash / Personal Card.</div></div>
+      <div class="help-item"><div class="help-emoji">📷</div><div class="help-text">Tap the <b>camera area</b> to photograph the receipt.</div></div>
+      <div class="help-item"><div class="help-emoji">🤖</div><div class="help-text">AI will automatically identify <b>vendor, amounts, and item categories</b>.</div></div>
+      <div class="help-item"><div class="help-emoji">✅</div><div class="help-text">Tap <b>“Submit Receipt ✓”</b>.</div></div>
     </div>
   </div>
 </div>
@@ -273,7 +273,7 @@ function selectRole(role) {
   state.role = role;
   document.getElementById('roleScreen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
-  document.getElementById('roleTag').textContent = (role === 'driver' ? 'Driver' : 'Purchasing') + ' ⟳';
+  document.getElementById('roleTag').textContent = (role === 'driver' ? 'Route Driver' : 'Purchasing') + ' ⟳';
   switchTab(role === 'purchasing' ? 'purchase' : 'delivery');
 }
 function resetRole() {
@@ -430,33 +430,16 @@ function closeHelp() {
 }
 
 // ─── RECEIPT (ported from index.html — Purchasing Staff only) ─────────────────
-let rcState = { name:'', payment:'', files:[], cashAmount:'', cashApprovedBy:'', reimburseTo:'', reimburseAmount:'' };
-let rcPage = 1;
+let rcState = { payment:'', files:[], cashAmount:'', cashApprovedBy:'', reimburseTo:'', reimburseAmount:'' };
 let rcRendered = false;
 
-async function initReceipt() {
+// Receipt tab opens straight on the "Photograph Document" screen — no role/name
+// step, no center, no manual amounts (AI extracts vendor & amounts).
+function initReceipt() {
   if (rcRendered) return;
   rcRendered = true;
   document.getElementById('tab-receipt').innerHTML = `
-    <div class="steps"><div class="step active" id="rcS1"></div><div class="step" id="rcS2"></div></div>
-
-    <div class="page active" id="rcP1">
-      <div class="page-title">Who are you?</div>
-      <div class="page-sub">Select your role and name.</div>
-      <div class="role-grid">
-        <div class="role-card" id="rc-role" onclick="rcSelectRole()">
-          <div class="role-icon">🛒</div><div class="role-name">Purchasing Staff</div>
-        </div>
-      </div>
-      <div class="field" id="rc-name-field" style="display:none">
-        <label class="label">Your Name</label>
-        <select id="rc-name"><option value="">— Select your name —</option></select>
-      </div>
-      <div class="err" id="rcErr" style="display:none;margin-bottom:14px;"></div>
-      <div class="btn-row"><button class="btn btn-primary" onclick="rcGoTo(2)">Next →</button></div>
-    </div>
-
-    <div class="page" id="rcP2">
+    <div id="rcForm">
       <div class="page-title">Photograph Document</div>
       <div class="page-sub">Receipt, invoice, product label, or payment document. Multiple photos OK.</div>
       <div class="field"><label class="label">How was this paid?</label>
@@ -486,56 +469,23 @@ async function initReceipt() {
       <div class="upload-zone">
         <input type="file" accept="image/*,.pdf" multiple capture="environment" onchange="rcHandleFiles(this.files)">
         <div class="upload-icon">📷</div><div class="upload-label">Tap to take photo</div>
-        <div class="upload-hint">Receipt · Invoice · Product label · JPG, PNG, PDF</div>
+        <div class="upload-hint">Receipt · Invoice · Product label · Card slip · JPG, PNG, PDF</div>
       </div>
       <div class="thumbs" id="rc-thumbs"></div>
       <div class="err" id="rcSubmitErr" style="display:none;margin-bottom:12px;"></div>
       <div class="progress-bar" id="rc-progress" style="display:none"><div class="progress-fill" id="rc-progress-fill"></div></div>
       <div class="btn-row">
-        <button class="btn btn-ghost" onclick="rcGoTo(1)">← Back</button>
-        <button class="btn btn-primary" id="rc-submit" onclick="rcSubmit()" disabled>✓ Submit</button>
+        <button class="btn btn-primary" id="rc-submit" onclick="rcSubmit()" disabled style="flex:1">✓ Submit Receipt</button>
       </div>
     </div>
 
-    <div class="page" id="rcP3">
+    <div id="rcSuccess" style="display:none">
       <div class="success-wrap">
         <div class="success-icon">✓</div><div class="success-title">Submitted!</div>
         <div class="success-sub" id="rc-success-msg"></div>
         <button class="btn btn-primary" onclick="rcReset()">+ Submit Another</button>
       </div>
     </div>`;
-
-  // Purchasing staff names (anon can't read the table directly → RPC).
-  try {
-    const names = await rpc('purchasing_staff_names', {});
-    const sel = document.getElementById('rc-name');
-    (Array.isArray(names) ? names : []).forEach(n => {
-      const o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o);
-    });
-  } catch (e) { console.warn('[receipt] names load:', e.message); }
-}
-
-function rcSelectRole() {
-  document.getElementById('rc-role').classList.add('selected');
-  document.getElementById('rc-name-field').style.display = 'block';
-}
-
-function rcGoTo(n) {
-  if (n === 2) {
-    const sel = document.getElementById('rc-name');
-    rcState.name = sel ? sel.value : '';
-    if (!rcState.name) return rcShowErr('rcErr', 'Tap “Purchasing Staff”, then select your name.');
-    rcClearErr('rcErr');
-    document.getElementById('rcS1').className = 'step done';
-    document.getElementById('rcS2').className = 'step active';
-  } else {
-    document.getElementById('rcS1').className = 'step active';
-    document.getElementById('rcS2').className = 'step';
-  }
-  document.getElementById('rcP' + rcPage).classList.remove('active');
-  rcPage = n;
-  document.getElementById('rcP' + n).classList.add('active');
-  window.scrollTo(0, 0);
 }
 
 function rcSelectPayment(type) {
@@ -576,7 +526,7 @@ async function rcSubmit() {
     const today = new Date();
     const fiscal = today.toISOString().slice(0, 7);
     const dt = today.toISOString().slice(5, 10).replace('-', '');
-    const who = (rcState.name.split(' ')[0] || 'STAFF').toUpperCase();
+    const who = 'STAFF';
     for (let i = 0; i < rcState.files.length; i++) {
       const f = rcState.files[i];
       const ext = (f.name.split('.').pop() || 'jpg');
@@ -596,7 +546,7 @@ async function rcSubmit() {
     else if (rcState.payment === 'personal') payment_meta = { reimburse_to: rcState.reimburseTo || null, reimburse_amount: rcState.reimburseAmount || null };
 
     const res = await rpc('submit_receipt_full', {
-      p_center: 'office', p_buyer: rcState.name, p_user_role: 'purchasing',
+      p_center: 'office', p_buyer: null, p_user_role: 'purchasing',
       p_payment_method: rcState.payment || null, p_payment_meta: payment_meta, p_file_paths: filePaths,
     });
     if (res && res.ok === false) throw new Error(res.error || 'insert failed');
@@ -610,19 +560,18 @@ async function rcSubmit() {
 }
 
 function rcShowSuccess() {
-  document.getElementById('rcS2').className = 'step done';
-  document.getElementById('rcP2').classList.remove('active');
-  document.getElementById('rcP3').classList.add('active');
+  document.getElementById('rcForm').style.display = 'none';
+  document.getElementById('rcSuccess').style.display = 'block';
   let extra = '';
   if (rcState.payment === 'cash' && rcState.cashApprovedBy) extra = '\nApproved by: ' + rcState.cashApprovedBy;
   if (rcState.payment === 'personal' && rcState.reimburseTo) extra = '\nReimbursement to: ' + rcState.reimburseTo;
   document.getElementById('rc-success-msg').textContent =
-    `Document submitted by ${rcState.name}.\n${rcState.files.length} photo${rcState.files.length !== 1 ? 's' : ''} saved.${extra}\nAI will process automatically.`;
+    `Receipt submitted.\n${rcState.files.length} photo${rcState.files.length !== 1 ? 's' : ''} saved.${extra}\nAI will process automatically.`;
 }
 
 function rcReset() {
-  rcState = { name:'', payment:'', files:[], cashAmount:'', cashApprovedBy:'', reimburseTo:'', reimburseAmount:'' };
-  rcRendered = false; rcPage = 1;
+  rcState = { payment:'', files:[], cashAmount:'', cashApprovedBy:'', reimburseTo:'', reimburseAmount:'' };
+  rcRendered = false;
   document.getElementById('tab-receipt').innerHTML = '';
   initReceipt();
 }
