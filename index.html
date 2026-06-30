@@ -47,7 +47,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .page.active{display:block;}
 .page-title{font-size:22px;font-weight:600;margin-bottom:6px;}
 .page-sub{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.5;}
-.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.role-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:16px;}
 .role-card{background:var(--surface2);border:2px solid var(--border);border-radius:14px;padding:20px 14px;cursor:pointer;transition:all .15s;text-align:center;}
 .role-card:hover{border-color:var(--accent);}
 .role-card.selected{border-color:var(--accent);background:rgba(79,142,247,.1);}
@@ -163,10 +163,6 @@ input[type=text]::placeholder{color:var(--muted);}
       <div class="role-icon">🏫</div>
       <div class="role-name">Director</div>
     </div>
-    <div class="role-card" id="role-purchasing" onclick="selectRole('purchasing')">
-      <div class="role-icon">🛒</div>
-      <div class="role-name">Purchasing Staff</div>
-    </div>
   </div>
   <div class="field" id="center-field" style="display:none">
     <label class="label">Center</label>
@@ -250,6 +246,9 @@ input[type=text]::placeholder{color:var(--muted);}
     <div class="upload-hint">Receipt · Invoice · Product label · Card slip · JPG, PNG, PDF</div>
   </div>
   <div class="thumbs" id="thumbs"></div>
+  <div class="notice" style="background:rgba(247,201,79,.08);border-color:rgba(247,201,79,.3);">
+    📨 <b style="color:var(--text)">After submitting:</b> place the original receipts or invoices in an envelope and give them to the food delivery driver to bring to the office.
+  </div>
   <div class="summary" id="summary" style="display:none">
     <div class="summary-row"><span class="summary-key">Name</span><span class="summary-val" id="sum-name"></span></div>
     <div class="summary-row"><span class="summary-key">Role</span><span class="summary-val" id="sum-role"></span></div>
@@ -300,10 +299,6 @@ input[type=text]::placeholder{color:var(--muted);}
         <div class="help-emoji">🏫</div>
         <div class="help-text"><b>Director</b> — select your center, then select your name from the list.</div>
       </div>
-      <div class="help-item">
-        <div class="help-emoji">🛒</div>
-        <div class="help-text"><b>Purchasing Staff</b> — select your name from the list.</div>
-      </div>
     </div>
 
     <div class="help-section">
@@ -338,6 +333,14 @@ input[type=text]::placeholder{color:var(--muted);}
       </div>
       <div class="help-tip">
         <b>AI automatically identifies:</b> vendor · amounts · food vs non-food · milk gallons · product details from labels and barcodes.
+      </div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">Original Documents</div>
+      <div class="help-item">
+        <div class="help-emoji">📨</div>
+        <div class="help-text">After uploading, <b>place the original receipts or invoices in an envelope and give them to the food delivery driver</b> to bring to the office.</div>
       </div>
     </div>
 
