@@ -280,13 +280,15 @@ function onBuyer(v){ state.buyer = v || ''; try{ localStorage.setItem('cacfp_buy
 async function loadBuyers(){
   const sel = document.getElementById('buyerSel'); if(!sel) return;
   try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/purchasers?select=name,is_active&is_active=eq.true&order=name`,
-      { headers:{ 'apikey':SUPABASE_ANON, 'Authorization':'Bearer '+SUPABASE_ANON, 'Accept-Profile':DB_SCHEMA } });
-    const rows = r.ok ? await r.json() : [];
+    // ⛔ ТОЛЬКО ЗАКУПЩИКИ (роль в данных): водитель-экспедитор (Delivery Driver) и Management
+    //    в атрибуцию закупки не входят. Philippe → Delivery Driver, поэтому здесь его нет.
+    // ⛔ ЧЕРЕЗ RPC, НЕ ПРЯМОЙ SELECT: у anon нет чтения purchasers (RLS отдаёт 200 []),
+    //    прямой fetch давал бы пустой список молча. list_purchasers — узкая DEFINER-дверь.
+    const names = (await rpc('list_purchasers', { p_role: 'Purchasing Staff' })) || [];
     let saved=''; try{ saved = localStorage.getItem('cacfp_buyer')||'' }catch{}
     sel.innerHTML = '<option value="">Who is buying?</option>' +
-      rows.map(p=>`<option value="${(p.name||'').replace(/"/g,'&quot;')}" ${p.name===saved?'selected':''}>${esc(p.name||'')}</option>`).join('');
-    state.buyer = saved && rows.some(p=>p.name===saved) ? saved : '';
+      names.map(n=>`<option value="${String(n).replace(/"/g,'&quot;')}" ${n===saved?'selected':''}>${esc(n)}</option>`).join('');
+    state.buyer = saved && names.includes(saved) ? saved : '';
   } catch(e){ /* оставляем плейсхолдер */ }
 }
 
@@ -340,9 +342,30 @@ function switchTab(name) {
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function fmtTime(iso){ try { return new Date(iso).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}); } catch { return ''; } }
 
+// ⭐ ВОДИТЕЛЬ-ЭКСПЕДИТОР (Delivery Driver в purchasers, Philippe первым). Кто повёз —
+//    пишется к рейсу через driver_claim_route (delivery_routes.driver_name).
+let DRIVERS = null;
+async function ensureDrivers() {
+  if (DRIVERS) return DRIVERS;
+  try { DRIVERS = (await rpc('list_purchasers', { p_role: 'Delivery Driver' })) || []; }
+  catch { DRIVERS = []; }
+  return DRIVERS;
+}
+async function onDriver(name) {
+  try { await rpc('driver_claim_route', { p_driver: name || null }); } catch (e) { console.error('[driver] claim failed', e); }
+  loadDelivery();
+}
+function driverHeader(cur) {
+  const opts = ['<option value="">— assign driver —</option>']
+    .concat((DRIVERS||[]).map(n=>`<option value="${esc(n)}" ${n===cur?'selected':''}>${esc(n)}</option>`)).join('');
+  return `<div class="route-banner"><b>Route driver</b> — who is driving today's run
+    <select onchange="onDriver(this.value)" style="width:100%;margin-top:8px;padding:11px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:15px;">${opts}</select></div>`;
+}
+
 async function loadDelivery() {
   const root = document.getElementById('tab-delivery');
   root.innerHTML = '<div class="muted-center">Loading today’s route…</div>';
+  await ensureDrivers();
   let routes;
   try {
     routes = await rpc('driver_today_route', {});
@@ -352,11 +375,11 @@ async function loadDelivery() {
     return;
   }
   if (!Array.isArray(routes) || routes.length === 0) {
-    root.innerHTML = '<div class="muted-center">No delivery route scheduled for today.</div>';
+    root.innerHTML = driverHeader('') + '<div class="muted-center">No delivery route scheduled for today.</div>';
     return;
   }
 
-  let html = '';
+  let html = driverHeader((routes[0] && routes[0].driver_name) || '');
   routes.forEach(route => {
     html += `<div class="route-banner"><b>${esc(route.from_center || 'Kitchen')}</b> · ${esc(route.delivery_date)}
       <div class="route-path">${(route.stops||[]).map(s=>esc(s.center)+' '+esc(s.arrival_window)).join('  →  ')}</div></div>`;
