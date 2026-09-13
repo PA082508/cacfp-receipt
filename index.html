@@ -7,22 +7,23 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="CACFP">
-<meta name="theme-color" content="#0f1117">
+<meta name="theme-color" content="#0f4c35">
 <meta http-equiv="Cache-Control" content="no-store"> 
 <link rel="apple-touch-icon" href="https://rkabxzqcikojcphwrkty.supabase.co/storage/v1/object/public/assets/PA-Logo-144x144.png">
 <link rel="icon" type="image/png" href="https://rkabxzqcikojcphwrkty.supabase.co/storage/v1/object/public/assets/PA-Logo-144x144.png">
 <title>CACFP Receipt Upload</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
-:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2a2d3a;--accent:#4f8ef7;--green:#38d9a9;--danger:#ff6b6b;--text:#e8eaf0;--muted:#6b7280;}
+/* Мягкая светлая тема по образцу платформы (без оранжевого; cash-акцент → синий). */
+:root{--bg:#f0fdf4;--surface:#ffffff;--surface2:#f6faf7;--border:#d5e5da;--accent:#0f4c35;--green:#0f7a4f;--danger:#b42318;--text:#14231a;--muted:#5b6b60;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px;}
 
 /* HEADER */
-.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:12px;}
+.header{background:var(--accent);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:12px;}
 .header-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--green));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
 .header-title{font-size:20px;font-weight:600;color:#ffffff;}
-.header-sub{font-size:12px;color:var(--muted);}
+.header-sub{font-size:12px;color:rgba(255,255,255,.82);}
 
 /* HELP BUTTON — white, visible */
 .help-btn{
@@ -57,7 +58,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
 select,input[type=text]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;padding:13px 14px;outline:none;transition:border-color .2s;appearance:none;}
 select:focus,input[type=text]:focus{border-color:var(--accent);}
-select option{background:#1a1d27;}
+select option{background:#fff;}
 input[type=text]::placeholder{color:var(--muted);}
 .upload-zone{border:2px dashed var(--border);border-radius:16px;padding:36px 20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;margin-bottom:16px;}
 .upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(79,142,247,.04);}
@@ -74,7 +75,7 @@ input[type=text]::placeholder{color:var(--muted);}
 .pay-card{background:var(--surface2);border:2px solid var(--border);border-radius:12px;padding:12px 8px;cursor:pointer;transition:all .15s;text-align:center;}
 .pay-card:hover{border-color:var(--accent);}
 .pay-card.selected.corporate{border-color:var(--accent);background:rgba(79,142,247,.1);}
-.pay-card.selected.cash{border-color:#f7c94f;background:rgba(247,201,79,.1);}
+.pay-card.selected.cash{border-color:#2563eb;background:rgba(37,99,235,.1);}
 .pay-card.selected.personal{border-color:var(--danger);background:rgba(255,107,107,.08);}
 .pay-icon{font-size:24px;margin-bottom:4px;}
 .pay-name{font-size:12px;font-weight:600;}
@@ -83,7 +84,7 @@ input[type=text]::placeholder{color:var(--muted);}
 .pay-extra.visible{display:block;}
 .pay-extra-inner{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;}
 .pay-extra-inner .label{margin-top:0;}
-.cash-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(247,201,79,.12);border:1px solid rgba(247,201,79,.3);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:#f7c94f;margin-bottom:12px;}
+.cash-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(37,99,235,.12);border:1px solid rgba(37,99,235,.3);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:#2563eb;margin-bottom:12px;}
 .personal-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.25);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--danger);margin-bottom:12px;}
 .notice{background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:16px;}
 .notice b{color:var(--text);}
@@ -96,7 +97,7 @@ input[type=text]::placeholder{color:var(--muted);}
 .badge-director{background:rgba(79,142,247,.15);color:var(--accent);}
 .badge-purchasing{background:rgba(56,217,169,.12);color:var(--green);}
 .badge-corporate{background:rgba(79,142,247,.15);color:var(--accent);}
-.badge-cash{background:rgba(247,201,79,.15);color:#f7c94f;}
+.badge-cash{background:rgba(37,99,235,.15);color:#2563eb;}
 .badge-personal{background:rgba(255,107,107,.12);color:var(--danger);}
 .btn{width:100%;padding:15px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;cursor:pointer;border:none;transition:all .15s;}
 .btn-primary{background:var(--accent);color:#fff;}
@@ -147,7 +148,9 @@ input[type=text]::placeholder{color:var(--muted);}
     <div class="header-sub">CACFP Food Program</div>
   </div>
   <div style="margin-left:auto;display:flex;gap:8px">
-    <a class="help-btn" href="scan-child-form.html" style="margin-left:0;text-decoration:none">📄 Scan form</a>
+    <!-- ⛔ Кнопка «Scan form» убрана из шапки: она была БЕЗ ключа центра, а дверь скана
+         требует секрет-ссылку (замок — список детей без ключа не отдаётся). Скан теперь —
+         персональная закладка центра (…/scan-child-form.html?center=&k=) на служебном iPhone. -->
     <button class="help-btn" onclick="openHelp()" style="margin-left:0">Help?</button>
   </div>
 </div>
@@ -249,7 +252,7 @@ input[type=text]::placeholder{color:var(--muted);}
     <div class="upload-hint">Receipt · Invoice · Product label · Card slip · JPG, PNG, PDF</div>
   </div>
   <div class="thumbs" id="thumbs"></div>
-  <div class="notice" style="background:rgba(247,201,79,.08);border-color:rgba(247,201,79,.3);">
+  <div class="notice" style="background:rgba(37,99,235,.08);border-color:rgba(37,99,235,.3);">
     📨 <b style="color:var(--text)">After submitting:</b> place the original receipts or invoices in an envelope and give them to the food delivery driver to bring to the office.
   </div>
   <div class="summary" id="summary" style="display:none">
@@ -746,6 +749,12 @@ init();
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
       navigator.serviceWorker.register('sw.js').catch(function(){});
+    });
+    // ⭐ Мягкое анти-стейл: сеть-вперёд SW + перезагрузка на новую версию (директор не
+    //    остаётся на старом бандле после выкладки).
+    var reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (!reloaded) { reloaded = true; location.reload(); }
     });
   }
 </script>

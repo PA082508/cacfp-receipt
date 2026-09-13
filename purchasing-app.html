@@ -7,12 +7,14 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Purchasing">
-<meta name="theme-color" content="#0f1117">
+<meta name="theme-color" content="#0f4c35">
 <meta http-equiv="Cache-Control" content="no-store">
 <title>Purchasing App</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
-:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2a2d3a;--accent:#4f8ef7;--green:#38d9a9;--amber:#f7c94f;--danger:#ff6b6b;--text:#e8eaf0;--muted:#6b7280;}
+/* Мягкая светлая тема по образцу платформы; активная вкладка — подложкой бренд-цвета.
+   Оранжевого нет: прежний --amber (dispatched/cash) переведён в синий (не читается красным). */
+:root{--bg:#f0fdf4;--surface:#ffffff;--surface2:#f6faf7;--border:#d5e5da;--accent:#0f4c35;--green:#0f7a4f;--amber:#2563eb;--danger:#b42318;--text:#14231a;--muted:#5b6b60;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 .hidden{display:none!important;}
@@ -29,21 +31,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .role-card .ds{font-size:12px;color:var(--muted);margin-top:2px;}
 
 /* APP SHELL */
-.app{min-height:100vh;padding-bottom:72px;}
-.topbar{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;}
-.topbar .t{font-size:17px;font-weight:600;}
+.app{min-height:100vh;}
+.topbar{position:sticky;top:0;z-index:6;background:var(--accent);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;}
+.topbar .t{font-size:17px;font-weight:600;color:#fff;}
 .topbar .r{font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:4px 10px;border-radius:20px;}
 .content{padding:16px;}
 
-/* TAB BAR */
-.tabbar{position:fixed;left:0;right:0;bottom:0;height:64px;background:var(--surface);border-top:1px solid var(--border);display:flex;padding-bottom:env(safe-area-inset-bottom);}
-.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--muted);font-size:10px;font-weight:600;}
-.tab .ic{font-size:21px;}
-.tab.active{color:var(--accent);}
+/* TAB BAR — ВЕРХНИЙ РЯД (слово владельца). Активная вкладка читается ПОДЛОЖКОЙ бренд-цвета,
+   а не только оттенком иконки. Липнет под топбаром. */
+.tabbar{position:sticky;top:50px;z-index:4;height:58px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--muted);font-size:11px;font-weight:700;border-bottom:3px solid transparent;}
+.tab .ic{font-size:20px;}
+.tab.active{color:#fff;background:var(--accent);border-bottom-color:var(--accent);}
 
 /* DELIVERY */
 .route-banner{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:13px;}
-.route-banner b{color:#fff;}
+.route-banner b{color:var(--text);}
 .route-path{margin-top:6px;color:var(--muted);font-size:12px;}
 .slot-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin:18px 0 8px;}
 .stop{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;}
@@ -52,7 +55,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .stop-when{font-size:12px;color:var(--muted);margin-top:2px;}
 .badge{font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em;}
 .badge.pending{background:rgba(107,114,128,.18);color:#9aa3b2;}
-.badge.dispatched{background:rgba(247,201,79,.15);color:var(--amber);}
+.badge.dispatched{background:rgba(37,99,235,.15);color:var(--amber);}
 .badge.delivered{background:rgba(56,217,169,.15);color:var(--green);}
 .cont{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:13px;}
 .cont .em{font-size:18px;}
@@ -138,7 +141,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 #tab-receipt .pay-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
 #tab-receipt .pay-card{background:var(--surface2);border:2px solid var(--border);border-radius:12px;padding:12px 6px;cursor:pointer;text-align:center;}
 #tab-receipt .pay-card.selected.corporate{border-color:var(--accent);background:rgba(79,142,247,.1);}
-#tab-receipt .pay-card.selected.cash{border-color:var(--amber);background:rgba(247,201,79,.1);}
+#tab-receipt .pay-card.selected.cash{border-color:var(--amber);background:rgba(37,99,235,.1);}
 #tab-receipt .pay-card.selected.personal{border-color:var(--danger);background:rgba(255,107,107,.08);}
 #tab-receipt .pay-icon{font-size:22px;margin-bottom:4px;}
 #tab-receipt .pay-name{font-size:12px;font-weight:600;}
@@ -146,7 +149,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 #tab-receipt .pay-extra{display:none;margin-bottom:14px;}
 #tab-receipt .pay-extra.visible{display:block;}
 #tab-receipt .pay-extra-inner{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;}
-#tab-receipt .cash-badge{display:inline-block;background:rgba(247,201,79,.12);border:1px solid rgba(247,201,79,.3);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--amber);margin-bottom:12px;}
+#tab-receipt .cash-badge{display:inline-block;background:rgba(37,99,235,.12);border:1px solid rgba(37,99,235,.3);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--amber);margin-bottom:12px;}
 #tab-receipt .personal-badge{display:inline-block;background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.25);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--danger);margin-bottom:12px;}
 #tab-receipt .notice{background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:14px;}
 #tab-receipt .notice b{color:var(--text);}
@@ -206,21 +209,29 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <div class="topbar">
     <div class="t" id="tabTitle">Purchase</div>
     <div style="display:flex;gap:8px;align-items:center;">
+      <!-- ⭐ ПОКУПАТЕЛЬ ВИДЕН ПОСТОЯННО: выбор шьётся в атрибуцию закупки и чека. -->
+      <select id="buyerSel" onchange="onBuyer(this.value)"
+              style="font-size:12px;font-weight:600;color:var(--text);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:5px 10px;max-width:150px;">
+        <option value="">Who is buying?</option>
+      </select>
       <button class="help-btn" onclick="openHelp()">Help?</button>
       <div class="r" id="roleTag" onclick="resetRole()">— ⟳</div>
     </div>
   </div>
 
-  <div class="content">
-    <div id="tab-purchase"></div>
-    <div id="tab-receipt" class="hidden"></div>
-    <div id="tab-messages" class="hidden"></div>
-  </div>
-
+  <!-- ⭐ НАВИГАЦИЯ — ВЕРХНИМ РЯДОМ: Purchase · Receipt · Delivery · Messages -->
   <div class="tabbar">
     <div class="tab" id="nav-purchase" onclick="switchTab('purchase')"><div class="ic">🛒</div>Purchase</div>
     <div class="tab" id="nav-receipt" onclick="switchTab('receipt')"><div class="ic">📷</div>Receipt</div>
+    <div class="tab" id="nav-delivery" onclick="switchTab('delivery')"><div class="ic">🚚</div>Delivery</div>
     <div class="tab" id="nav-messages" onclick="switchTab('messages')"><div class="ic">📬</div>Messages</div>
+  </div>
+
+  <div class="content">
+    <div id="tab-purchase"></div>
+    <div id="tab-receipt" class="hidden"></div>
+    <div id="tab-delivery" class="hidden"></div>
+    <div id="tab-messages" class="hidden"></div>
   </div>
 </div>
 
@@ -261,7 +272,23 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 const DB_SCHEMA = 'menumaker';
 const ALERT_ROLE = 'purchasing';   // 'driver' for driver-app, 'purchasing' for purchasing-app
 
-const state = { role: null, tab: 'purchase' };
+const state = { role: null, tab: 'purchase', buyer: '' };
+
+// ⭐ Список покупателей — из ДАННЫХ (menumaker.purchasers), не хардкод. Выбор шьётся в
+//    атрибуцию закупки и чека (путь файла …_NAME_… + p_buyer).
+function onBuyer(v){ state.buyer = v || ''; try{ localStorage.setItem('cacfp_buyer', state.buyer) }catch{} }
+async function loadBuyers(){
+  const sel = document.getElementById('buyerSel'); if(!sel) return;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/purchasers?select=name,is_active&is_active=eq.true&order=name`,
+      { headers:{ 'apikey':SUPABASE_ANON, 'Authorization':'Bearer '+SUPABASE_ANON, 'Accept-Profile':DB_SCHEMA } });
+    const rows = r.ok ? await r.json() : [];
+    let saved=''; try{ saved = localStorage.getItem('cacfp_buyer')||'' }catch{}
+    sel.innerHTML = '<option value="">Who is buying?</option>' +
+      rows.map(p=>`<option value="${(p.name||'').replace(/"/g,'&quot;')}" ${p.name===saved?'selected':''}>${esc(p.name||'')}</option>`).join('');
+    state.buyer = saved && rows.some(p=>p.name===saved) ? saved : '';
+  } catch(e){ /* оставляем плейсхолдер */ }
+}
 
 // Call a SECURITY DEFINER RPC in the menumaker schema as the anon role.
 async function rpc(fn, args) {
@@ -285,6 +312,7 @@ function selectRole(role) {
   document.getElementById('roleScreen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('roleTag').textContent = (role === 'driver' ? 'Route Driver' : 'Purchasing') + ' ⟳';
+  loadBuyers();
   switchTab(role === 'purchasing' ? 'purchase' : 'delivery');
   initAlerts();
 }
@@ -587,13 +615,15 @@ async function rcSubmit() {
   const btn = document.getElementById('rc-submit');
   const bar = document.getElementById('rc-progress'), fill = document.getElementById('rc-progress-fill');
   rcClearErr('rcSubmitErr');
+  // ⭐ Атрибуция обязательна: без покупателя чек уходил как STAFF/null. Теперь — кто купил.
+  if (!state.buyer) { rcShowErr('rcSubmitErr', 'Pick who is buying — the selector at the top right.'); return; }
   btn.disabled = true; btn.textContent = 'Uploading…'; bar.style.display = 'block'; fill.style.width = '10%';
   const filePaths = [];
   try {
     const today = new Date();
     const fiscal = today.toISOString().slice(0, 7);
     const dt = today.toISOString().slice(5, 10).replace('-', '');
-    const who = 'STAFF';
+    const who = state.buyer.split(' ')[0].toUpperCase().replace(/[^A-Z0-9]/g, '') || 'STAFF';
     for (let i = 0; i < rcState.files.length; i++) {
       const f = rcState.files[i];
       const ext = (f.name.split('.').pop() || 'jpg');
@@ -613,7 +643,7 @@ async function rcSubmit() {
     else if (rcState.payment === 'personal') payment_meta = { reimburse_to: rcState.reimburseTo || null, reimburse_amount: rcState.reimburseAmount || null };
 
     const res = await rpc('submit_receipt_full', {
-      p_center: 'office', p_buyer: null, p_user_role: 'purchasing',
+      p_center: 'office', p_buyer: state.buyer || null, p_user_role: 'purchasing',
       p_payment_method: rcState.payment || null, p_payment_meta: payment_meta, p_file_paths: filePaths,
     });
     if (res && res.ok === false) throw new Error(res.error || 'insert failed');
@@ -731,6 +761,14 @@ function renderMessages() {
     </div>`).join('');
 }
 function markRead(id) { lsAdd(LS_READ, [id]); updateMsgBadge(); renderMessages(); }
+
+// ⭐ Мягкое анти-стейл: сеть-вперёд SW + перезагрузка на новую версию — закупщик не живёт
+//    на старом бандле после выкладки.
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+  let reloaded=false;
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>{ if(!reloaded){ reloaded=true; location.reload(); } });
+}
 </script>
 </body>
 </html>

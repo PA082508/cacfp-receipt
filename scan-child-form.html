@@ -1,87 +1,119 @@
 <!doctype html>
 <!--
-  Scan child form — Phase 1.5 photo intake (hand-off module for the cacfp-receipt
-  mobile app, github.com/PA082508/cacfp-receipt).
+  Scan child form (v2, 2026-09-13) — hand-off module of the cacfp-receipt app.
 
-  Standalone page: the office photographs a signed paper enrollment form, this
-  sends it to the menumaker `enrollment-scan-ocr` edge function (upload + OCR),
-  shows what was read, and submits a pending enrollment_submission via
-  submit_enrollment_form(source='paper_entry'). It then appears in the director's
-  Enrollment Inbox with the scan attached (📎) and low-confidence fields flagged.
+  ДВЕРЬ ДОКУМЕНТА, НЕ OCR (канон 25.08 «скан не рождает запись»). Офис фотографирует
+  ПОДПИСАННУЮ бумагу; фото ложится в ДЕЛО РЕБЁНКА (menumaker.documents, source=uploaded)
+  через edge scan-file-document. Данные с бумаги вносит офис — здесь их НЕ читают.
 
-  BEFORE USE — fill the three CONFIG blocks below:
-    1. MENUMAKER_URL / MENUMAKER_ANON_KEY  (same public anon key the web app uses;
-       VITE_SUPABASE_ANON_KEY in menumaker-app/.env)
-    2. CENTERS — real org_id + center_id for each of the 3 centers (from
-       menumaker.centers). The director picks theirs.
-  Also deploy the bucket + edge function + secret (see mobile/README.md).
+  Замок: секрет-ссылка центра  ?center=<uuid>&k=<raw>  (mint_document_scan_key). Список
+  детей приходит ТОЛЬКО по валидному ключу (scan_children_for_key), только этого центра.
 -->
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f4c35" />
+  <meta http-equiv="Cache-Control" content="no-store" />
   <title>Scan child form</title>
   <style>
-    :root { --green:#0f4c35; --ink:#1a2e1a; }
-    * { box-sizing: border-box; font-family: -apple-system, "DM Sans", system-ui, sans-serif; }
-    body { margin:0; background:#f4f6f4; color:var(--ink); }
-    header { background:var(--green); color:#fff; padding:16px 18px; font-size:20px; font-weight:700; }
-    main { padding:18px; max-width:520px; margin:0 auto; }
-    label { display:block; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#6b7280; margin:14px 0 6px; }
-    select, button { width:100%; padding:13px 14px; border-radius:10px; font-size:16px; border:1.5px solid #c0d8c0; background:#fff; }
-    button.primary { background:var(--green); color:#fff; border:none; font-weight:700; margin-top:16px; }
-    button:disabled { opacity:.5; }
-    .types { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-    .types button { font-size:14px; font-weight:600; }
-    .types button.sel { background:var(--green); color:#fff; border-color:var(--green); }
-    .capture { margin-top:14px; border:2px dashed #c0d8c0; border-radius:12px; padding:22px; text-align:center; background:#fff; }
-    .capture img { max-width:100%; border-radius:10px; }
-    .note { font-size:13px; color:#6b7280; margin-top:10px; }
-    .ok { background:#f0fff4; border:1px solid #bbf7d0; border-radius:12px; padding:16px; margin-top:14px; }
-    .warn { color:#92400e; }
-    pre { background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:12px; font-size:12px; overflow:auto; }
-    input[type=file] { display:none; }
+    /* Мягкая светлая тема по образцу платформы. */
+    :root{ --bg:#f0fdf4; --surface:#ffffff; --surface2:#f6faf7; --border:#d5e5da;
+           --brand:#0f4c35; --brand-soft:#e7f4ec; --text:#14231a; --muted:#5b6b60; --danger:#b42318; }
+    *{ box-sizing:border-box; font-family:-apple-system,"DM Sans",system-ui,sans-serif; }
+    body{ margin:0; background:var(--bg); color:var(--text); }
+    header{ background:var(--brand); color:#fff; padding:16px 18px; font-size:20px; font-weight:700;
+            display:flex; align-items:center; gap:10px; }
+    .back{ background:rgba(255,255,255,.16); color:#fff; border:1px solid rgba(255,255,255,.5);
+           border-radius:8px; padding:5px 12px; font-size:14px; font-weight:600; cursor:pointer; }
+    main{ padding:18px; max-width:520px; margin:0 auto; }
+    label{ display:block; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:16px 0 6px; }
+    select,input[type=date],button{ width:100%; padding:13px 14px; border-radius:10px; font-size:16px; border:1.5px solid var(--border); background:var(--surface); color:var(--text); }
+    button.primary{ background:var(--brand); color:#fff; border:none; font-weight:700; margin-top:18px; }
+    button:disabled{ opacity:.5; }
+    .types{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .types button{ font-size:14px; font-weight:600; }
+    .types button.sel{ background:var(--brand); color:#fff; border-color:var(--brand); }
+    .capture{ margin-top:8px; border:2px dashed var(--border); border-radius:12px; padding:22px; text-align:center; background:var(--surface); cursor:pointer; }
+    .capture img{ max-width:100%; border-radius:10px; }
+    .note{ font-size:13px; color:var(--muted); margin-top:10px; line-height:1.5; }
+    .ok{ background:var(--brand-soft); border:1px solid #bbf7d0; border-radius:12px; padding:16px; margin-top:16px; }
+    .err{ background:#fef2f2; border:1px solid #f4c7c7; color:var(--danger); border-radius:12px; padding:14px; margin-top:14px; font-size:14px; }
+    .center-line{ font-size:13px; color:var(--muted); margin-top:6px; }
+    input[type=file]{ display:none; }
   </style>
 </head>
 <body>
-  <header>📄 Scan child form</header>
-  <main id="app"></main>
+  <header>
+    <button class="back" onclick="location.href='index.html'">← Back</button>
+    <span>📄 Scan child form</span>
+  </header>
+  <main id="app"><div class="note">Loading…</div></main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
-    // ── CONFIG 1 — menumaker project (public anon key) ───────────────────────
+    // ── menumaker (публичный anon-ключ; замок — ключ центра, не этот ключ) ──────
     const MENUMAKER_URL = 'https://trrmyqfpxntmgxnqkikp.supabase.co'
-    // Public legacy anon key (same as the web app's VITE_SUPABASE_ANON_KEY). Safe to ship.
-    const MENUMAKER_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko'
+    const MENUMAKER_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko'
 
-    // ── CONFIG 2 — the three centers (real IDs from menumaker.centers) ───────
-    const CENTERS = [
-      { label: 'Ridge (Wickliffe)',        orgId: '3a9a290e-7e49-491e-946b-ad86f2399910', centerId: '4aed7d5a-00d0-4a4c-ac99-311046ad2027' },
-      { label: 'Alpha (Highland Heights)', orgId: '3a9a290e-7e49-491e-946b-ad86f2399910', centerId: '099c404b-e6d3-4543-9d9a-1fb11a2ee62d' },
-      { label: 'Pearl (Parma Heights)',    orgId: '3a9a290e-7e49-491e-946b-ad86f2399910', centerId: '881ef4ce-1a27-4d3b-aa60-59d2a307bf2b' },
-    ]
-
+    // Детские типы (per_child словаря menumaker). Сервер всё равно проверяет, что тип
+    // per_child + intake_route='child'. Верный код IEA — ieg_application.
     const TYPES = [
-      { code: 'cacfp_enrollment', label: 'CACFP Enrollment' },
-      { code: 'iea',              label: 'Income Eligibility' },
-      { code: 'dcy_01234',        label: 'DCY 01234' },
-      { code: 'other',            label: 'Other (scan only)' },
+      { code:'cacfp_enrollment',            label:'CACFP Enrollment' },
+      { code:'ieg_application',             label:'Income Eligibility (IEA)' },
+      { code:'dcy_01234',                   label:'DCY 01234 — Enrollment & Health' },
+      { code:'dcy_01236',                   label:'DCY 01236 — Care Plan' },
+      { code:'dcy_01305',                   label:'JFS 01305 — Medical Statement' },
+      { code:'special_diet_statement',      label:'Special Diet / Medical' },
+      { code:'child_release_authorization', label:'Child Release Authorization' },
     ]
 
-    const sb = supabase.createClient(MENUMAKER_URL, MENUMAKER_ANON_KEY)
+    const qs = new URLSearchParams(location.search)
+    const CENTER = (qs.get('center') || '').trim()
+    const KEY = (qs.get('k') || '').trim()
     const app = document.getElementById('app')
-    const state = { center: CENTERS[0], type: 'cacfp_enrollment', imageData: null, busy: false, result: null }
+    const state = { children:null, roster:'', type:'cacfp_enrollment', date:'', imageData:null, busy:false, result:null, error:null }
+
+    async function rpc(fn, args) {
+      const r = await fetch(`${MENUMAKER_URL}/rest/v1/rpc/${fn}`, {
+        method:'POST',
+        headers:{ 'apikey':MENUMAKER_ANON, 'Authorization':'Bearer '+MENUMAKER_ANON,
+                  'Content-Type':'application/json', 'Content-Profile':'menumaker' },
+        body: JSON.stringify(args),
+      })
+      if (!r.ok) throw new Error('API '+r.status)
+      return r.json()
+    }
+
+    async function loadChildren() {
+      if (!CENTER || !KEY) { state.error = 'This page needs the center scan link from the office.'; render(); return }
+      try {
+        const res = await rpc('scan_children_for_key', { p_center: CENTER, p_key: KEY })
+        if (!res || !res.ok) { state.error = (res && res.message) || 'This scan link is not valid. Ask the office for a fresh link.'; render(); return }
+        state.children = res.children || []
+        render()
+      } catch (e) { state.error = 'Could not load the child list. Check the connection and try again.'; render() }
+    }
 
     function render() {
-      const c = state.center
+      if (state.error) { app.innerHTML = `<div class="err">⚠︎ ${esc(state.error)}</div>`; return }
+      if (state.children === null) { app.innerHTML = '<div class="note">Loading the children for this center…</div>'; return }
+      if (state.result) { app.innerHTML = renderResult(state.result); wireResult(); return }
+
       app.innerHTML = `
-        <label>Center</label>
-        <select id="center">${CENTERS.map((x,i)=>`<option value="${i}" ${x===c?'selected':''}>${x.label}</option>`).join('')}</select>
+        <label>Child this paper is about</label>
+        <select id="child">
+          <option value="">— pick the child —</option>
+          ${state.children.map(c=>`<option value="${c.roster_id}" ${c.roster_id===state.roster?'selected':''}>${esc(c.name||'—')}</option>`).join('')}
+        </select>
 
         <label>Form type</label>
         <div class="types">
-          ${TYPES.map(t=>`<button data-type="${t.code}" class="${state.type===t.code?'sel':''}">${t.label}</button>`).join('')}
+          ${TYPES.map(t=>`<button data-type="${t.code}" class="${state.type===t.code?'sel':''}">${esc(t.label)}</button>`).join('')}
         </div>
+
+        <label>Date printed on the document <span style="text-transform:none;color:var(--muted)">(not today)</span></label>
+        <input type="date" id="date" value="${state.date}" max="${new Date().toISOString().slice(0,10)}" />
 
         <label>Photo of the signed form</label>
         <div class="capture" id="capture">
@@ -89,68 +121,53 @@
         </div>
         <input type="file" id="file" accept="image/*" capture="environment" />
 
-        <button class="primary" id="submit" ${(!state.imageData||state.busy)?'disabled':''}>
-          ${state.busy ? 'Reading & submitting…' : (state.type==='other' ? 'Attach scan to Inbox' : 'Read form & submit')}
+        <button class="primary" id="submit" ${(!state.roster||!state.date||!state.imageData||state.busy)?'disabled':''}>
+          ${state.busy ? 'Saving…' : 'Save to child’s file'}
         </button>
-        <div class="note">${state.type==='other'
-          ? 'No OCR — the scan is attached; complete the fields in the director Inbox.'
-          : 'OCR reads the fields; anything unclear is flagged “verify” for the director.'}</div>
-        ${state.result ? renderResult(state.result) : ''}
+        <div class="note">The photo of the signed paper is filed to the child’s record; the data itself is entered by the office.</div>
       `
-      app.querySelector('#center').onchange = e => { state.center = CENTERS[+e.target.value]; render() }
+      app.querySelector('#child').onchange = e => { state.roster = e.target.value }
+      app.querySelector('#date').onchange = e => { state.date = e.target.value; toggleSubmit() }
+      app.querySelector('#child').addEventListener('change', toggleSubmit)
       app.querySelectorAll('[data-type]').forEach(b => b.onclick = () => { state.type = b.dataset.type; render() })
       app.querySelector('#capture').onclick = () => app.querySelector('#file').click()
       app.querySelector('#file').onchange = onFile
       app.querySelector('#submit').onclick = onSubmit
     }
+    function toggleSubmit(){ const b=app.querySelector('#submit'); if(b) b.disabled = !(state.roster&&state.date&&state.imageData&&!state.busy) }
 
-    function renderResult(r) {
-      if (r.error) return `<div class="ok warn">⚠︎ ${r.error}</div>`
-      const lc = (r.lowConfidence||[]).length
-      return `<div class="ok">
-        ✅ Submitted to the Enrollment Inbox.
-        ${lc ? `<div class="warn">🔍 ${lc} field(s) flagged “verify” for the director.</div>` : ''}
-        <button class="primary" onclick="location.reload()">Scan another</button>
-      </div>`
+    function renderResult(r){
+      if (r.error) return `<div class="err">⚠︎ ${esc(r.error)}</div><button class="primary" id="again">Try again</button>`
+      return `<div class="ok">✅ ${esc(r.message||'Saved to the child’s file.')}</div><button class="primary" id="again">Scan another</button>`
     }
+    function wireResult(){ const b=app.querySelector('#again'); if(b) b.onclick=()=>{ state.result=null; state.imageData=null; state.roster=''; state.date=''; render() } }
 
-    function onFile(e) {
-      const f = e.target.files[0]; if (!f) return
-      const reader = new FileReader()
-      reader.onload = () => { state.imageData = reader.result; render() }
-      reader.readAsDataURL(f)
-    }
+    function onFile(e){ const f=e.target.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ state.imageData=rd.result; render() }; rd.readAsDataURL(f) }
 
-    async function onSubmit() {
-      state.busy = true; state.result = null; render()
+    async function onSubmit(){
+      state.busy=true; render()
       try {
-        // 1) upload + OCR via the edge function
-        const res = await fetch(`${MENUMAKER_URL}/functions/v1/enrollment-scan-ocr`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${MENUMAKER_ANON_KEY}` },
-          body: JSON.stringify({ image: state.imageData, submissionType: state.type, centerId: state.center.centerId }),
+        const res = await fetch(`${MENUMAKER_URL}/functions/v1/scan-file-document`, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+MENUMAKER_ANON },
+          body: JSON.stringify({ center:CENTER, key:KEY, roster:state.roster, doc_type:state.type, document_date:state.date, image:state.imageData }),
         })
         const out = await res.json()
-        if (!res.ok) throw new Error(out.error || `OCR failed (${res.status})`)
-
-        // 2) create the pending submission (nothing hits the roster until Approve)
-        const { error } = await sb.schema('menumaker').rpc('submit_enrollment_form', {
-          p_org: state.center.orgId,
-          p_center: state.center.centerId,
-          p_submission_type: state.type,
-          p_form_data: out.form_data,
-          p_source: 'paper_entry',
-        })
-        if (error) throw error
-        state.result = { lowConfidence: out.lowConfidence }
-      } catch (e) {
-        state.result = { error: e.message || String(e) }
-      } finally {
-        state.busy = false; render()
-      }
+        if (!res.ok || !out.ok) throw new Error(out.message || `Save failed (${res.status})`)
+        state.result = { message: out.message }
+      } catch (e) { state.result = { error: e.message || String(e) } }
+      finally { state.busy=false; render() }
     }
 
-    render()
+    function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])) }
+
+    // ── мягкое анти-стейл: сеть-вперёд SW + перезагрузка на новую версию ──────────
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(()=>{})
+      let reloaded=false
+      navigator.serviceWorker.addEventListener('controllerchange', ()=>{ if(!reloaded){ reloaded=true; location.reload() } })
+    }
+    loadChildren()
   </script>
 </body>
 </html>
