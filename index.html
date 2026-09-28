@@ -711,7 +711,7 @@ async function submitReceipt() {
     };
     const res = await fetch('https://trrmyqfpxntmgxnqkikp.supabase.co/functions/v1/upload-receipt', {
       method:'POST',
-      headers:{'Content-Type':'application/json','x-upload-token':'pa_697d7c4186d7444084bd3b1e68d0182a'},
+      headers:{'Content-Type':'application/json','x-upload-token':'pa_c1263bd0691f46a7c220fa49e3f60ae4'},
       body:JSON.stringify({receipt:rec})
     });
     const out = await res.json();
