@@ -209,11 +209,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <div class="topbar">
     <div class="t" id="tabTitle">Purchase</div>
     <div style="display:flex;gap:8px;align-items:center;">
-      <!-- ⭐ ПОКУПАТЕЛЬ ВИДЕН ПОСТОЯННО: выбор шьётся в атрибуцию закупки и чека. -->
-      <select id="buyerSel" onchange="onBuyer(this.value)"
-              style="font-size:12px;font-weight:600;color:var(--text);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:5px 10px;max-width:150px;">
-        <option value="">Who is buying?</option>
-      </select>
+      <!-- ⭐ «Who is buying?» живёт В ФОРМЕ ЧЕКА (01.10): в шапке, мелким селектором, его на айфоне не находили. -->
       <button class="help-btn" onclick="openHelp()">Help?</button>
       <div class="r" id="roleTag" onclick="resetRole()">— ⟳</div>
     </div>
@@ -297,36 +293,43 @@ function onBuyer(v){
   // ⛔ Сообщение «Pick who is buying» не должно залипать: выбран покупатель — просьба снята.
   if (state.buyer) rcClearErr('rcSubmitErr');
 }
+// The list is loaded once and kept; the form field is painted from it whenever the form is drawn
+// (the list may arrive before or after the Receipt tab is first opened — both orders must work).
+const buyers = { names: null, error: '' };
 async function loadBuyers(){
-  const sel = document.getElementById('buyerSel'); if(!sel) return;
   try {
     // ⛔ ТОЛЬКО ЗАКУПЩИКИ (роль в данных): водитель-экспедитор (Delivery Driver) и Management
     //    в атрибуцию закупки не входят. Philippe → Delivery Driver, поэтому здесь его нет.
     // ⛔ ЧЕРЕЗ ДВЕРЬ, НЕ ПРЯМОЙ SELECT: у anon нет чтения purchasers (RLS отдаёт 200 []),
     //    прямой fetch давал бы пустой список молча.
-    const names = (await rpc('list_purchasers', { p_role: 'Purchasing Staff' })) || [];
-    let saved=''; try{ saved = localStorage.getItem('cacfp_buyer')||'' }catch{}
-    sel.innerHTML = '<option value="">Who is buying?</option>' +
-      names.map(n=>`<option value="${String(n).replace(/"/g,'&quot;')}" ${n===saved?'selected':''}>${esc(n)}</option>`).join('');
-    state.buyer = saved && names.includes(saved) ? saved : '';
-    buyersError('');
+    buyers.names = (await rpc('list_purchasers', { p_role: 'Purchasing Staff' })) || [];
+    buyers.error = '';
   } catch(e){
     // ⛔ ОТКАЗ СПИСКА ГОВОРИТСЯ СЛОВАМИ (§23). 29.09–01.10 список молча оставался пустым, а Submit
     //    требовал выбрать покупателя из пустого списка — человек не мог ни выбрать, ни понять почему.
+    buyers.names = null;
+    buyers.error = (e && e.message) || 'The list of buyers did not load — check the connection and reload.';
+  }
+  paintBuyers();
+}
+function paintBuyers(){
+  const sel = document.getElementById('buyerSel'), err = document.getElementById('buyersErr');
+  if (!sel) return;                       // the Receipt form is not drawn yet — initReceipt paints it
+  if (buyers.error) {
     sel.innerHTML = '<option value="">Buyer list did not load</option>';
     state.buyer = '';
-    buyersError((e && e.message) || 'The list of buyers did not load — check the connection and reload.');
+  } else if (!buyers.names) {
+    sel.innerHTML = '<option value="">Loading the list…</option>';
+  } else {
+    let saved=''; try{ saved = localStorage.getItem('cacfp_buyer')||'' }catch{}
+    sel.innerHTML = '<option value="">Pick a name</option>' +
+      buyers.names.map(n=>`<option value="${String(n).replace(/"/g,'&quot;')}" ${n===saved?'selected':''}>${esc(n)}</option>`).join('');
+    state.buyer = saved && buyers.names.includes(saved) ? saved : '';
   }
-}
-function buyersError(msg){
-  let el = document.getElementById('buyersErr');
-  if (!el) {
-    el = document.createElement('div'); el.id = 'buyersErr'; el.className = 'err';
-    el.style.cssText = 'margin:8px 14px 0;';
-    const bar = document.querySelector('#app .topbar'); if (bar && bar.parentNode) bar.parentNode.insertBefore(el, bar.nextSibling);
+  if (err) {
+    err.textContent = buyers.error ? buyers.error + ' Receipts cannot be submitted until the list loads.' : '';
+    err.style.display = buyers.error ? 'block' : 'none';
   }
-  el.textContent = msg ? msg + ' Receipts cannot be submitted until the list loads.' : '';
-  el.style.display = msg ? 'block' : 'none';
 }
 
 // Every server call goes through ONE keyed door (menumaker.purchasing_door): the key names the
@@ -551,6 +554,10 @@ function initReceipt() {
     <div id="rcForm">
       <div class="page-title">Photograph Document</div>
       <div class="page-sub">Receipt, invoice, product label, or payment document. Multiple photos OK.</div>
+      <div class="field"><label class="label" for="buyerSel">Who is buying?</label>
+        <select id="buyerSel" onchange="onBuyer(this.value)"><option value="">Loading the list…</option></select>
+        <div class="err" id="buyersErr" style="display:none;margin:8px 0 0;"></div>
+      </div>
       <div class="field"><label class="label">How was this paid?</label>
         <div class="pay-grid">
           <div class="pay-card" id="rc-pay-corporate" onclick="rcSelectPayment('corporate')"><div class="pay-icon">💳</div><div class="pay-name">Corporate</div><div class="pay-sub">Auto-verified</div></div>
@@ -595,6 +602,7 @@ function initReceipt() {
         <button class="btn btn-primary" onclick="rcReset()">+ Submit Another</button>
       </div>
     </div>`;
+  paintBuyers();   // the list may already be here (or its refusal) — the field says so at once
 }
 
 function rcSelectPayment(type) {
@@ -684,7 +692,11 @@ async function rcSubmit() {
   const bar = document.getElementById('rc-progress'), fill = document.getElementById('rc-progress-fill');
   rcClearErr('rcSubmitErr');
   // ⭐ Атрибуция обязательна: без покупателя чек уходил как STAFF/null. Теперь — кто купил.
-  if (!state.buyer) { rcShowErr('rcSubmitErr', 'Pick who is buying — the selector at the top right.'); return; }
+  if (!state.buyer) {
+    rcShowErr('rcSubmitErr', buyers.error ? 'The list of buyers did not load — see the message under «Who is buying?» at the top of this form.' : 'Pick who is buying — the field at the top of this form.');
+    const f = document.getElementById('buyerSel'); if (f && f.scrollIntoView) f.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
   btn.disabled = true; btn.textContent = 'Uploading…'; bar.style.display = 'block'; fill.style.width = '10%';
   const filePaths = [];
   try {
