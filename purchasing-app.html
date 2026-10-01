@@ -274,27 +274,66 @@ const ALERT_ROLE = 'purchasing';   // 'driver' for driver-app, 'purchasing' for 
 
 const state = { role: null, tab: 'purchase', buyer: '' };
 
+// ⭐ КЛЮЧ ДВЕРИ (01.10, вариант B). Страница работает без входа; сервер пускает её по КЛЮЧУ, а не
+//    анонимно (20261102zzr: menumaker.purchasing_door). Ключ приходит ссылкой офиса (`?k=…`) и
+//    запоминается на устройстве; в исходнике страницы секрета нет. EMBEDDED_KEY оставлен пустым:
+//    вшитый ключ = тот же публичный доступ, что и анонимный (находка 28.09 по index.html).
+const EMBEDDED_KEY = '';
+const DOOR_KEY = (() => {
+  let k = '';
+  try { k = new URLSearchParams(location.search).get('k') || ''; } catch {}
+  try {
+    if (k) { localStorage.setItem('pa_purchasing_key', k); history.replaceState(null, '', location.pathname); }
+    else k = localStorage.getItem('pa_purchasing_key') || '';
+  } catch {}
+  return k || EMBEDDED_KEY;
+})();
+const NO_KEY_WORDS = 'This device has no Purchasing link yet — open the link the office gave you (it is kept on this device after the first time).';
+
 // ⭐ Список покупателей — из ДАННЫХ (menumaker.purchasers), не хардкод. Выбор шьётся в
 //    атрибуцию закупки и чека (путь файла …_NAME_… + p_buyer).
-function onBuyer(v){ state.buyer = v || ''; try{ localStorage.setItem('cacfp_buyer', state.buyer) }catch{} }
+function onBuyer(v){
+  state.buyer = v || ''; try{ localStorage.setItem('cacfp_buyer', state.buyer) }catch{}
+  // ⛔ Сообщение «Pick who is buying» не должно залипать: выбран покупатель — просьба снята.
+  if (state.buyer) rcClearErr('rcSubmitErr');
+}
 async function loadBuyers(){
   const sel = document.getElementById('buyerSel'); if(!sel) return;
   try {
     // ⛔ ТОЛЬКО ЗАКУПЩИКИ (роль в данных): водитель-экспедитор (Delivery Driver) и Management
     //    в атрибуцию закупки не входят. Philippe → Delivery Driver, поэтому здесь его нет.
-    // ⛔ ЧЕРЕЗ RPC, НЕ ПРЯМОЙ SELECT: у anon нет чтения purchasers (RLS отдаёт 200 []),
-    //    прямой fetch давал бы пустой список молча. list_purchasers — узкая DEFINER-дверь.
+    // ⛔ ЧЕРЕЗ ДВЕРЬ, НЕ ПРЯМОЙ SELECT: у anon нет чтения purchasers (RLS отдаёт 200 []),
+    //    прямой fetch давал бы пустой список молча.
     const names = (await rpc('list_purchasers', { p_role: 'Purchasing Staff' })) || [];
     let saved=''; try{ saved = localStorage.getItem('cacfp_buyer')||'' }catch{}
     sel.innerHTML = '<option value="">Who is buying?</option>' +
       names.map(n=>`<option value="${String(n).replace(/"/g,'&quot;')}" ${n===saved?'selected':''}>${esc(n)}</option>`).join('');
     state.buyer = saved && names.includes(saved) ? saved : '';
-  } catch(e){ /* оставляем плейсхолдер */ }
+    buyersError('');
+  } catch(e){
+    // ⛔ ОТКАЗ СПИСКА ГОВОРИТСЯ СЛОВАМИ (§23). 29.09–01.10 список молча оставался пустым, а Submit
+    //    требовал выбрать покупателя из пустого списка — человек не мог ни выбрать, ни понять почему.
+    sel.innerHTML = '<option value="">Buyer list did not load</option>';
+    state.buyer = '';
+    buyersError((e && e.message) || 'The list of buyers did not load — check the connection and reload.');
+  }
+}
+function buyersError(msg){
+  let el = document.getElementById('buyersErr');
+  if (!el) {
+    el = document.createElement('div'); el.id = 'buyersErr'; el.className = 'err';
+    el.style.cssText = 'margin:8px 14px 0;';
+    const bar = document.querySelector('#app .topbar'); if (bar && bar.parentNode) bar.parentNode.insertBefore(el, bar.nextSibling);
+  }
+  el.textContent = msg ? msg + ' Receipts cannot be submitted until the list loads.' : '';
+  el.style.display = msg ? 'block' : 'none';
 }
 
-// Call a SECURITY DEFINER RPC in the menumaker schema as the anon role.
+// Every server call goes through ONE keyed door (menumaker.purchasing_door): the key names the
+// organisation, the door offers only the functions this app uses, and a refusal comes back in words.
 async function rpc(fn, args) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+  if (!DOOR_KEY) throw new Error(NO_KEY_WORDS);
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/purchasing_door`, {
     method: 'POST',
     headers: {
       'apikey': SUPABASE_ANON,
@@ -302,10 +341,16 @@ async function rpc(fn, args) {
       'Content-Type': 'application/json',
       'Content-Profile': DB_SCHEMA,
     },
-    body: JSON.stringify(args || {}),
+    body: JSON.stringify({ p_key: DOOR_KEY, p_fn: fn, p_args: args || {} }),
   });
-  if (!r.ok) throw new Error('API ' + r.status + ': ' + await r.text());
-  return r.json();
+  if (!r.ok) throw new Error('The server did not answer (' + r.status + ') — check the connection and try again.');
+  const out = await r.json();
+  if (!out || out.ok === false) {
+    // a dead key must not stay on the device as if it worked
+    if (out && out.error === 'bad_key') { try { localStorage.removeItem('pa_purchasing_key') } catch {} }
+    throw new Error((out && out.message) || 'The server refused this request.');
+  }
+  return out.data;
 }
 
 function selectRole(role) {
@@ -625,7 +670,7 @@ function rcRenderThumbs() {
     if (f.type.startsWith('image/')) { const img = document.createElement('img'); img.className = 'thumb'; img.src = URL.createObjectURL(f); w.appendChild(img); }
     else { const d = document.createElement('div'); d.className = 'thumb-pdf'; d.textContent = '📄'; w.appendChild(d); }
     const del = document.createElement('button'); del.className = 'thumb-del'; del.textContent = '×';
-    del.onclick = () => { rcState.files.splice(i, 1); rcRenderThumbs(); };
+    del.onclick = () => { rcState.files.splice(i, 1); rcClearErr('rcSubmitErr'); rcRenderThumbs(); };
     w.appendChild(del); c.appendChild(w);
   });
   rcCheckReady();
