@@ -400,6 +400,17 @@ input[type=text]::placeholder{color:var(--muted);}
 <script>
 // === MenuMaker (project trrmyqfpxntmgxnqkikp) ===
 const SUPABASE_URL = 'https://trrmyqfpxntmgxnqkikp.supabase.co';
+// 04.10.2026 (owner's line «да, весь S3 сегодня»): the receipt key is NOT written in this page any more — it sat
+// here in a public repository. It comes from the office's link (…/index.html?k=…), is kept on this phone, and
+// is dropped when the server says it is no longer valid.
+const UPLOAD_KEY_STORE = 'pa_receipt_key';
+let UPLOAD_KEY = '';
+try {
+  const k = new URLSearchParams(location.search).get('k');
+  if (k) { localStorage.setItem(UPLOAD_KEY_STORE, k); history.replaceState(null, '', location.pathname); UPLOAD_KEY = k; }
+  else UPLOAD_KEY = localStorage.getItem(UPLOAD_KEY_STORE) || '';
+} catch { UPLOAD_KEY = new URLSearchParams(location.search).get('k') || ''; }
+const NO_KEY_WORDS = 'This page has no receipt link. Open the link the office sent you, then send the receipt again. Nothing was saved.';
 // anon public key проекта MenuMaker (publishable — безопасно в клиенте)
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko';
 const DB_SCHEMA = 'menumaker';   // PostgREST: требует Accept-Profile / Content-Profile
@@ -672,6 +683,7 @@ async function submitReceipt() {
   const bar = document.getElementById('progressBar');
   const fill = document.getElementById('progressFill');
   err.classList.remove('visible');
+  if (!UPLOAD_KEY) { err.textContent = NO_KEY_WORDS; err.classList.add('visible'); return; }
   btn.disabled = true; btn.textContent = 'Uploading...';
   bar.style.display = 'block'; fill.style.width = '10%';
   const today = new Date();
@@ -711,11 +723,12 @@ async function submitReceipt() {
     };
     const res = await fetch('https://trrmyqfpxntmgxnqkikp.supabase.co/functions/v1/upload-receipt', {
       method:'POST',
-      headers:{'Content-Type':'application/json','x-upload-token':'pa_c1263bd0691f46a7c220fa49e3f60ae4'},
+      headers:{'Content-Type':'application/json','x-upload-token':UPLOAD_KEY},
       body:JSON.stringify({receipt:rec})
     });
     const out = await res.json();
-    if (!res.ok) throw new Error(out.error || 'upload failed');
+    if (res.status === 401) { try { localStorage.removeItem(UPLOAD_KEY_STORE) } catch {} UPLOAD_KEY = ''; }
+    if (!res.ok) throw new Error(out.error || 'The receipt was not saved. Try again; if it happens twice, tell the office.');
     fill.style.width = '100%';
     setTimeout(() => { bar.style.display='none'; showSuccess(); }, 400);
   } catch(e) {
