@@ -279,7 +279,11 @@ const DOOR_KEY = (() => {
   let k = '';
   try { k = new URLSearchParams(location.search).get('k') || ''; } catch {}
   try {
-    if (k) { localStorage.setItem('pa_purchasing_key', k); history.replaceState(null, '', location.pathname); }
+    // 20.10 (owner «Починка (а): да»): the key STAYS in the address. iOS «Add to Home Screen» saves the address as it is,
+    // and the home-screen app has its own storage, separate from Safari — with the key stripped (was history.replaceState)
+    // the icon always opened without access («Buyer list did not load» for every buyer since 01.10). Now every opening
+    // reads the key from the link and writes it again; a page opened without ?k= falls back to the key kept on the device.
+    if (k) localStorage.setItem('pa_purchasing_key', k);
     else k = localStorage.getItem('pa_purchasing_key') || '';
   } catch {}
   return k || EMBEDDED_KEY;
