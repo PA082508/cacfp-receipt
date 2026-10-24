@@ -261,6 +261,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 </div>
 
+<!-- 24.10 (owner's words 23.10, LAWS §L18 «one receipt = one record»): several photos in one submission ask what they are -->
+<div class="rc-overlay" id="rcHowManyOverlay" onclick="if(event.target===this)rcCloseHowMany()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;padding:0 16px;">
+  <div style="background:var(--surface,#fff);color:var(--text,#111);max-width:440px;margin:12vh auto 0;border-radius:16px;padding:20px;">
+    <div style="font-size:18px;font-weight:700;margin-bottom:8px;">Is this one receipt or several?</div>
+    <div style="font-size:14px;margin-bottom:14px;">You attached <b id="rcHowManyCount">2 photos</b>. One receipt = one record on the cost worksheet.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn btn-primary" onclick="rcSubmitWith('one')">One receipt (several pages)</button>
+      <button class="btn" style="border:2px solid var(--accent,#2563eb);" onclick="rcSubmitWith('several')">Several receipts — save each separately</button>
+      <button class="btn" onclick="rcCloseHowMany()">Back</button>
+    </div>
+  </div>
+</div>
 <script>
 // === MenuMaker (project trrmyqfpxntmgxnqkikp) — anon publishable key (safe in client) ===
 const SUPABASE_URL  = 'https://trrmyqfpxntmgxnqkikp.supabase.co';
@@ -691,7 +703,19 @@ function rcCheckReady() {
   document.getElementById('rc-submit').disabled = !(rcState.files.length > 0 && !!rcState.payment);
 }
 
-async function rcSubmit() {
+function rcCloseHowMany() { document.getElementById('rcHowManyOverlay').style.display = 'none'; }
+function rcSubmit() {
+  if (!state.buyer) { return rcSubmitWith('one'); }   // the buyer check below speaks first
+  if (rcState.files.length > 1) {
+    document.getElementById('rcHowManyCount').textContent = rcState.files.length + ' photos';
+    document.getElementById('rcHowManyOverlay').style.display = 'block';
+    return;
+  }
+  rcSubmitWith('one');
+}
+// how === 'one': all photos are pages of ONE receipt → one record. how === 'several': every photo is its own receipt → one record per photo.
+async function rcSubmitWith(how) {
+  rcCloseHowMany();
   const btn = document.getElementById('rc-submit');
   const bar = document.getElementById('rc-progress'), fill = document.getElementById('rc-progress-fill');
   rcClearErr('rcSubmitErr');
@@ -704,14 +728,12 @@ async function rcSubmit() {
   btn.disabled = true; btn.textContent = 'Uploading…'; bar.style.display = 'block'; fill.style.width = '10%';
   const filePaths = [];
   try {
-    const today = new Date();
-    const fiscal = today.toISOString().slice(0, 7);
-    const dt = today.toISOString().slice(5, 10).replace('-', '');
+    // the receipt date and fiscal month are stamped by the server door with the ORGANIZATION's day (Settings → Time zone), not the browser's clock
     const who = state.buyer.split(' ')[0].toUpperCase().replace(/[^A-Z0-9]/g, '') || 'STAFF';
     for (let i = 0; i < rcState.files.length; i++) {
       const f = rcState.files[i];
       const ext = (f.name.split('.').pop() || 'jpg');
-      const path = `purchasing/${fiscal}/${dt}_${who}_${Date.now()}_${i + 1}.${ext}`;
+      const path = `purchasing/inbox/${who}_${Date.now()}_${i + 1}.${ext}`;
       const up = await fetch(`${SUPABASE_URL}/storage/v1/object/receipts/${path}`, {
         method: 'POST',
         headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON, 'Content-Type': f.type || 'application/octet-stream' },
@@ -726,11 +748,17 @@ async function rcSubmit() {
     if (rcState.payment === 'cash') payment_meta = { cash_amount: rcState.cashAmount || null, approved_by: rcState.cashApprovedBy || null };
     else if (rcState.payment === 'personal') payment_meta = { reimburse_to: rcState.reimburseTo || null, reimburse_amount: rcState.reimburseAmount || null };
 
-    const res = await rpc('submit_receipt_full', {
-      p_center: 'office', p_buyer: state.buyer || null, p_user_role: 'purchasing',
-      p_payment_method: rcState.payment || null, p_payment_meta: payment_meta, p_file_paths: filePaths,
-    });
-    if (res && res.ok === false) throw new Error(res.error || 'insert failed');
+    const groups = how === 'several' ? filePaths.map(p => [p]) : [filePaths];   // one record per receipt (§L18)
+    rcState.saved = 0;
+    for (let g = 0; g < groups.length; g++) {
+      const res = await rpc('submit_receipt_full', {
+        p_center: 'office', p_buyer: state.buyer || null, p_user_role: 'purchasing',
+        p_payment_method: rcState.payment || null, p_payment_meta: payment_meta, p_file_paths: groups[g],
+      });
+      if (res && res.ok === false) throw new Error((res.error || 'The receipt was not saved.') + (rcState.saved ? ` (${rcState.saved} of ${groups.length} receipts were saved before this one.)` : ''));
+      rcState.saved++;
+      fill.style.width = (90 + 10 * rcState.saved / groups.length) + '%';
+    }
     fill.style.width = '100%';
     setTimeout(() => { bar.style.display = 'none'; rcShowSuccess(); }, 400);
   } catch (e) {
@@ -747,11 +775,11 @@ function rcShowSuccess() {
   if (rcState.payment === 'cash' && rcState.cashApprovedBy) extra = '\nApproved by: ' + rcState.cashApprovedBy;
   if (rcState.payment === 'personal' && rcState.reimburseTo) extra = '\nReimbursement to: ' + rcState.reimburseTo;
   document.getElementById('rc-success-msg').textContent =
-    `Receipt submitted.\n${rcState.files.length} photo${rcState.files.length !== 1 ? 's' : ''} saved.${extra}\nAI will process automatically.`;
+    `${rcState.saved || 1} receipt${(rcState.saved || 1) !== 1 ? 's' : ''} saved (${rcState.files.length} photo${rcState.files.length !== 1 ? 's' : ''}).${extra}\nThe reader starts right away; if it is busy, within the hour.`;
 }
 
 function rcReset() {
-  rcState = { payment:'', files:[], cashAmount:'', cashApprovedBy:'', reimburseTo:'', reimburseAmount:'' };
+  rcState = { payment:'', files:[], cashAmount:'', cashApprovedBy:'', reimburseTo:'', reimburseAmount:'', saved:0 };
   rcRendered = false;
   document.getElementById('tab-receipt').innerHTML = '';
   initReceipt();
