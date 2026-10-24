@@ -122,6 +122,7 @@ input[type=text]::placeholder{color:var(--muted);}
 .help-sheet{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);border-radius:20px 20px 0 0;z-index:1000;max-height:85vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s ease;}
 .help-sheet.open{transform:translateY(0);}
 .help-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0;}
+.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;padding:0 16px;} .help-overlay.open{display:block;}
 .help-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px 12px;}
 .help-header-title{font-size:17px;font-weight:600;}
 .help-close{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted);padding:6px 14px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;}
@@ -291,6 +292,18 @@ input[type=text]::placeholder{color:var(--muted);}
 <div class="help-overlay" id="helpOverlay" onclick="closeHelp()"></div>
 
 <!-- HELP SHEET -->
+<!-- 24.10 (owner's words 23.10, LAWS §L18 «one receipt = one record»): several photos in one submission ask what they are -->
+<div class="help-overlay" id="howManyOverlay" onclick="if(event.target===this)closeHowMany()">
+  <div class="help-sheet open" id="howManySheet" style="position:static;max-width:440px;margin:12vh auto 0;border-radius:16px;">
+    <div class="help-header"><div class="help-title">Is this one receipt or several?</div></div>
+    <div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:10px;">
+      <div class="help-text" style="margin-bottom:6px;">You attached <b id="howManyCount">2 photos</b>. One receipt = one record on the cost worksheet.</div>
+      <button class="btn btn-primary" onclick="submitWith('one')">One receipt (several pages)</button>
+      <button class="btn" style="border:2px solid var(--accent);" onclick="submitWith('several')">Several receipts — save each separately</button>
+      <button class="btn" onclick="closeHowMany()">Back</button>
+    </div>
+  </div>
+</div>
 <div class="help-sheet" id="helpSheet">
   <div class="help-handle"></div>
   <div class="help-header">
@@ -677,7 +690,18 @@ function checkSubmitReady() {
   document.getElementById('submitBtn').disabled = !(state.files.length > 0 && !!state.payment);
 }
 
-async function submitReceipt() {
+function closeHowMany() { document.getElementById('howManyOverlay').classList.remove('open'); }
+function submitReceipt() {
+  if (state.files.length > 1) {
+    document.getElementById('howManyCount').textContent = state.files.length + ' photos';
+    document.getElementById('howManyOverlay').classList.add('open');
+    return;
+  }
+  submitWith('one');
+}
+// how === 'one': all photos are pages of ONE receipt → one record. how === 'several': every photo is its own receipt → one record per photo.
+async function submitWith(how) {
+  closeHowMany();
   const btn = document.getElementById('submitBtn');
   const err = document.getElementById('submitError');
   const bar = document.getElementById('progressBar');
@@ -686,9 +710,7 @@ async function submitReceipt() {
   if (!UPLOAD_KEY) { err.textContent = NO_KEY_WORDS; err.classList.add('visible'); return; }
   btn.disabled = true; btn.textContent = 'Uploading...';
   bar.style.display = 'block'; fill.style.width = '10%';
-  const today = new Date();
-  const fiscal = today.toISOString().slice(0,7);
-  const dateStr = today.toISOString().slice(0,10);
+  // the receipt date and fiscal month are set by the server from the ORGANIZATION's day (Settings → Time zone), not the browser's UTC day
   const prefix = state.role==='director' ? `directors/${state.center}` : `purchasing`;
   const filePaths = [];
   try {
@@ -696,9 +718,8 @@ async function submitReceipt() {
       const f = state.files[i];
       const ext = f.name.split('.').pop();
       const who = state.name.split(' ')[0].toUpperCase();
-      const dt = dateStr.replace(/-/g,'').slice(4);
       const ts = Date.now();
-      const path = `${prefix}/${fiscal}/${dt}_${who}_${ts}_${i+1}.${ext}`;
+      const path = `${prefix}/inbox/${who}_${ts}_${i+1}.${ext}`;
       const up = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`,
         { method:'POST', headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON,'Content-Type':f.type||'application/octet-stream'}, body:f });
       if (!up.ok) throw new Error('Upload failed: '+await up.text());
@@ -712,23 +733,29 @@ async function submitReceipt() {
     } else if (state.payment==='personal') {
       payment_meta = { reimburse_to: state.reimburseTo || null, reimburse_amount: state.reimburseAmount || null };
     }
-    const rec = {
-      center: state.role==='director' ? state.center : 'office',
-      fiscal_month: fiscal, receipt_date: dateStr,
-      vendor: null, food_amt: null, nonfood_amt: null,
-      file_paths: filePaths, file_path: filePaths[0]||null,
-      user_role: state.role, buyer_name: state.name,
-      purchase_type: null, payment_method: state.payment || null,
-      payment_meta: payment_meta, status: 'pending'
-    };
-    const res = await fetch('https://trrmyqfpxntmgxnqkikp.supabase.co/functions/v1/upload-receipt', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-upload-token':UPLOAD_KEY},
-      body:JSON.stringify({receipt:rec})
-    });
-    const out = await res.json();
-    if (res.status === 401) { try { localStorage.removeItem(UPLOAD_KEY_STORE) } catch {} UPLOAD_KEY = ''; }
-    if (!res.ok) throw new Error(out.error || 'The receipt was not saved. Try again; if it happens twice, tell the office.');
+    const groups = how === 'several' ? filePaths.map(p => [p]) : [filePaths];   // one record per receipt
+    state.saved = 0;
+    for (let g = 0; g < groups.length; g++) {
+      const rec = {
+        center: state.role==='director' ? state.center : 'office',
+        fiscal_month: null, receipt_date: null,
+        vendor: null, food_amt: null, nonfood_amt: null,
+        file_paths: groups[g], file_path: groups[g][0]||null,
+        user_role: state.role, buyer_name: state.name,
+        purchase_type: null, payment_method: state.payment || null,
+        payment_meta: payment_meta, status: 'pending'
+      };
+      const res = await fetch('https://trrmyqfpxntmgxnqkikp.supabase.co/functions/v1/upload-receipt', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-upload-token':UPLOAD_KEY},
+        body:JSON.stringify({receipt:rec})
+      });
+      const out = await res.json();
+      if (res.status === 401) { try { localStorage.removeItem(UPLOAD_KEY_STORE) } catch {} UPLOAD_KEY = ''; }
+      if (!res.ok) throw new Error((out.error || 'The receipt was not saved. Try again; if it happens twice, tell the office.') + (state.saved ? ` (${state.saved} of ${groups.length} receipts were saved before this one.)` : ''));
+      state.saved++;
+      fill.style.width = (90 + 10 * state.saved / groups.length) + '%';
+    }
     fill.style.width = '100%';
     setTimeout(() => { bar.style.display='none'; showSuccess(); }, 400);
   } catch(e) {
@@ -746,7 +773,7 @@ function showSuccess() {
   if (state.payment==='cash' && state.cashApprovedBy) extra = `\nApproved by: ${state.cashApprovedBy}`;
   if (state.payment==='personal' && state.reimburseTo) extra = `\nReimbursement to: ${state.reimburseTo}`;
   document.getElementById('successMsg').textContent =
-    `Document submitted by ${state.name}.\n${state.files.length} photo${state.files.length!==1?'s':''} saved.${extra}\nAI will process automatically.`;
+    `Submitted by ${state.name}.\n${state.saved||1} receipt${(state.saved||1)!==1?'s':''} saved (${state.files.length} photo${state.files.length!==1?'s':''}).${extra}\nThe reader will process it within the hour.`;
 }
 
 function resetForm() {
